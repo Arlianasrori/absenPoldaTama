@@ -25,11 +25,17 @@ model anggota {
   absensi absensi[]
 }
 
+enum ApelAbsen {
+  pagi
+  sore
+}
+
 model absensi {
   id Int @id @default(autoincrement())
   id_anggota Int
   dateTime DateTime
   keterangan String
+  apel ApelAbsen
   absen String
 
   anggota anggota @relation(fields: [id_anggota],references: [id])
