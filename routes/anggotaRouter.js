@@ -4,6 +4,10 @@ import { anggotaMiddleware } from "../middleware/anggotaMiddleware.js"
 
 export const anggotaRouter = express.Router()
 
-anggotaRouter.post("/anggota/absen",anggotaMiddleware,anggotaController.addAbsen)
-anggotaRouter.get("/anggota/absen",anggotaMiddleware,anggotaController.getAllAbsenToday)
-anggotaRouter.get("/anggota",anggotaMiddleware,anggotaController.findAnggota)
+anggotaRouter.use(anggotaMiddleware)
+anggotaRouter.get("/anggota",anggotaController.findAnggota)
+
+// absen
+anggotaRouter.post("/anggota/absen",anggotaController.addAbsen)
+anggotaRouter.get("/anggota/absen",anggotaController.getAllAbsenToday)
+anggotaRouter.get("/anggota/absen/get/search",anggotaController.searchAbsen)

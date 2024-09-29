@@ -12,7 +12,7 @@ const login = async (req,res,next) => {
         console.log(data);
         
         
-        const findAdmin = await db.user.findFirst({
+        const findAdmin = await db.admin.findFirst({
             where : {
                 nirp : data.nirp
             }

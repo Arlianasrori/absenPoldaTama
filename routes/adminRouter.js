@@ -1,13 +1,16 @@
 import express from "express"
-import { userMiddleware } from "../middleware/userMiddleware.js"
+import { adminMiddleware } from "../middleware/adminMiddleware.js"
 import adminController from "../controller/adminController.js"
 
 export const adminRouter = express.Router()
 
-adminRouter.use(userMiddleware)
+adminRouter.use(adminMiddleware)
+
+adminRouter.get("/admin",adminController.findAdmin)
 
 // anggota
 adminRouter.post("/admin/anggota",adminController.addAnggota)
+adminRouter.get("/admin/anggota/get/search",adminController.searchAnggota)
 adminRouter.get("/admin/anggota",adminController.getAllAnggota)
 adminRouter.get("/admin/anggota/:id",adminController.findAnggotaById)
 adminRouter.put("/admin/anggota/:id",adminController.updateAnggota)

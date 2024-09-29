@@ -4,6 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,12 +12,18 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@ironsoftware/ironpdf": "^2024.9.1",
+    "@ironsoftware/ironpdf-engine-linux-x64": "^2024.9.1",
     "@prisma/client": "^5.19.1",
     "cookie-parser": "^1.4.6",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "html-pdf": "^3.0.1",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
-    "prisma": "^5.19.1"
+    "prisma": "^5.19.1",
+    "puppeteer": "^23.4.1",
+    "wkhtmltopdf": "^0.4.0"
   }
 }

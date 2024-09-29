@@ -2,7 +2,37 @@ import { db } from "../config/prismaClient.js";
 import adminvalidation from "../validation/adminvalidation.js";
 import { validate } from "../validation/validate.js";
 import responseError from "../error/responseError.js";
+import { format } from 'date-fns';
+import absenValidation from "../validation/absenValidation.js";
 
+
+const findAdmin = async (req,res,next) => {
+    try {
+        const id = req.admin.id
+
+        const findAdmin = await db.admin.findFirst({
+            where : {
+                id : id
+            },
+            select : {
+                id : true,
+                nama : true,
+                nirp : true
+            }
+        })
+
+        res.status(200).json({
+            msg : "success",
+            data : findAdmin
+        })
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+// anggota
 const addAnggota = async (req,res,next) => {
     try {
         let data = req.body
@@ -144,6 +174,113 @@ const deleteAnggota = async (req,res,next) => {
     }
 }
 
+const searchAnggota = async (req,res,next) => {
+    try {
+        let query = await validate(adminvalidation.searchAnggota,req.query)
+
+        const page = query.page ? parseInt(query.page) : 1
+        const limit = query.limit ? parseInt(query.limit) : 10
+        const skip = (page - 1) * limit
+
+        const findAnggota = await db.anggota.findMany({
+            where : {
+                AND : [
+                    {
+                        nirp : {
+                            equals : query.nirp,
+                            mode : "insensitive"
+                        }
+                    },
+                    {
+                        nama : {
+                            contains : query.nama,
+                            mode : "insensitive"
+                        }
+                    },
+                    {
+                        pangkat : {
+                            equals : query.pangkat,
+                            mode : "insensitive"
+                        }
+                    },
+                    {
+                        jabatan : {
+                            equals : query.jabatan,
+                            mode : "insensitive"
+                        }
+                    },
+                    {
+                        satker : {
+                            equals : query.satker,
+                            mode : "insensitive"
+                        }
+                    }
+                ]
+            },
+            skip : skip,
+            take : limit,
+            select : {
+                id : true,
+                nama : true,
+                nirp : true,
+                pangkat : true,
+                jabatan : true,
+                satker : true
+            }
+        })
+
+        const totalData = await db.anggota.count({
+            where : {
+                AND : [
+                    {
+                        nirp : {
+                            equals : query.nirp,
+                            mode : "insensitive"
+                        }
+                    },
+                    {
+                        nama : {
+                            contains : query.nama,
+                            mode : "insensitive"
+                        }
+                    },
+                    {
+                        pangkat : {
+                            equals : query.pangkat,
+                            mode : "insensitive"
+                        }
+                    },
+                    {
+                        jabatan : {
+                            equals : query.jabatan,
+                            mode : "insensitive"
+                        }
+                    },
+                    {
+                        satker : {
+                            equals : query.satker,
+                            mode : "insensitive"
+                        }
+                    }
+                ]
+            }
+        })
+
+        const totalPage = Math.ceil(totalData / limit)
+
+        return res.status(200).json({
+            msg : "success",
+            data : {
+                anggota : findAnggota,
+                totalData : totalData,
+                totalPage : totalPage
+            }
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
 // absen
 const addAbsen = async (req,res,next) => {
     try {
@@ -175,6 +312,7 @@ const addAbsen = async (req,res,next) => {
 const updateAbsen = async (req,res,next) => {
     try {
         const id = parseInt(req.params.id)
+        console.log(id);
         let data = await validate(adminvalidation.updateAbsenvalidation,req.body)
 
         let findAbsenById = await db.absensi.findUnique({
@@ -189,7 +327,7 @@ const updateAbsen = async (req,res,next) => {
 
         const updateAbsen = await db.absensi.update({
             where : {
-                id : data.id
+                id : id
             },
             data : data
         })
@@ -234,32 +372,29 @@ const deleteAbsen = async (req,res,next) => {
 
 const searchAbsen = async (req,res,next) => {
     try {
-        let query = await validate(adminvalidation.searchAbsenValidation,req.query)
+        let query = await validate(absenValidation.searchAbsenValidation,req.query)
 
-        let start = undefined
-        let end = undefined
+        const page = query.page ? parseInt(query.page) : 1
+        const limit = query.limit ? parseInt(query.limit) : 10
+        const skip = (page - 1) * limit
 
-        if (query.tanggal_mulai && query.tanggal_selesai) {
-            start = new Date(query.tanggal_mulai);
-            end = new Date(query.tanggal_selesai);
-        }
         const findAbsen = await db.absensi.findMany({
             where : {
                 AND : [
                     {
                         dateTime : {
-                            gte : start,
+                            gte : query.tanggal_mulai,
                         }
                     },
                     {
                         dateTime : {
-                            lte : end
+                            lte : query.tanggal_selesai
                         }
                     },
                     {
                         anggota : {
                             nirp : {
-                                contains : query.nirp,
+                                equals : query.nirp,
                                 mode : "insensitive"
                             }
                         }
@@ -275,7 +410,7 @@ const searchAbsen = async (req,res,next) => {
                     {
                         anggota : {
                             pangkat : {
-                                contains : query.pangkat,
+                                equals : query.pangkat,
                                 mode : "insensitive"
                             }
                         }
@@ -283,7 +418,7 @@ const searchAbsen = async (req,res,next) => {
                     {
                         anggota : {
                             satker : {
-                                contains : query.satker,
+                                equals : query.satker,
                                 mode : "insensitive"
                             }
                         }
@@ -295,12 +430,13 @@ const searchAbsen = async (req,res,next) => {
                     }
                 ]
             },
+            skip : skip,
+            take : limit,
             select : {
                 id : true,
                 id_anggota : true,
                 dateTime : true,
                 keterangan : true,
-                absen : true,
                 anggota : {
                     select : {
                         id : true,
@@ -313,10 +449,70 @@ const searchAbsen = async (req,res,next) => {
                 }
             }
         })
-        
+
+        const totalData = await db.absensi.count({
+            where : {
+                AND : [
+                    {
+                        dateTime : {
+                            gte : query.tanggal_mulai,
+                        }
+                    },
+                    {
+                        dateTime : {
+                            lte : query.tanggal_selesai
+                        }
+                    },
+                    {
+                        anggota : {
+                            nirp : {
+                                equals : query.nirp,
+                                mode : "insensitive"
+                            }
+                        }
+                    },
+                    {
+                        anggota : {
+                            nama : {
+                                contains : query.nama,
+                                mode : "insensitive"
+                            }
+                        }
+                    },
+                    {
+                        anggota : {
+                            pangkat : {
+                                equals : query.pangkat,
+                                mode : "insensitive"
+                            }
+                        }
+                    },
+                    {
+                        anggota : {
+                            satker : {
+                                equals : query.satker,
+                                mode : "insensitive"
+                            }
+                        }
+                    },
+                    {
+                        apel : {
+                            equals : query.apel
+                        }
+                    }
+                ]
+            }
+        })
+
+        const totalPage = Math.ceil(totalData / limit)
+
         return res.status(200).json({
             msg : "success",
-            data : findAbsen
+            data : {
+                absen : findAbsen,
+                totalData : totalData,
+                totalPage : totalPage
+            }
         })
     } catch (error) {
         next(error)
@@ -326,8 +522,9 @@ const searchAbsen = async (req,res,next) => {
 const getAllAbsenToday = async (req,res,next) => {
     try {
         const now = new Date()
-        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+        const start = format(new Date(now.getFullYear(), now.getMonth(), now.getDate()), 'yyyy-MM-dd HH:mm:ss')
+        const end = format(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59), 'yyyy-MM-dd HH:mm:ss')
+        
         const findAllAbsen = await db.absensi.findMany({
             where : {
 
@@ -349,7 +546,6 @@ const getAllAbsenToday = async (req,res,next) => {
                 id_anggota : true,
                 dateTime : true,
                 keterangan : true,
-                absen : true,
                 anggota : {
                     select : {
                         id : true,
@@ -385,7 +581,6 @@ const findAbsenById = async (req,res,next) => {
                 id_anggota : true,
                 dateTime : true,
                 keterangan : true,
-                absen : true,
                 anggota : {
                     select : {
                         id : true,
@@ -413,13 +608,15 @@ const findAbsenById = async (req,res,next) => {
     }
 }
 export default {
+    findAdmin,
+
     // anggota
     addAnggota,
     getAllAnggota,
     findAnggotaById,
     updateAnggota,
     deleteAnggota,
-
+    searchAnggota,
     // absen
     addAbsen,
     updateAbsen,
