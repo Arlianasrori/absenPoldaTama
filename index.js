@@ -5,12 +5,22 @@ import { anggotaRouter } from "./routes/anggotaRouter.js"
 import { adminRouter } from "./routes/adminRouter.js"
 import cookieParser from "cookie-parser"
 import env from "dotenv"
+import cors from "cors"
 env.config()
-
 const app = express()
 
 app.use(express.json())
 app.use(cookieParser()) 
+
+// cors
+app.use(
+    cors({
+        credentials: true,
+        origin: ["http://localhost:3001", "http://localhost:5173"],
+        optionsSuccessStatus: 200,
+    })
+);
+
 app.use(authRouter)
 app.use(anggotaRouter)
 app.use(adminRouter)
