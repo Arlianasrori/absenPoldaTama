@@ -3,7 +3,8 @@ import adminvalidation from "../validation/adminvalidation.js";
 import { validate } from "../validation/validate.js";
 import responseError from "../error/responseError.js";
 import { format } from 'date-fns';
-import absenValidation from "../validation/absenValidation.js";
+import { searchAbsen as searchAbsenUtils } from "../utils/searchAbsen.js";
+import { generatePDFAbsen } from "../utils/convertToPdfAbsen.js";
 
 
 const findAdmin = async (req,res,next) => {
@@ -372,147 +373,13 @@ const deleteAbsen = async (req,res,next) => {
 
 const searchAbsen = async (req,res,next) => {
     try {
-        let query = await validate(absenValidation.searchAbsenValidation,req.query)
+        const query = req.query
 
-        const page = query.page ? parseInt(query.page) : 1
-        const limit = query.limit ? parseInt(query.limit) : 10
-        const skip = (page - 1) * limit
-
-        const findAbsen = await db.absensi.findMany({
-            where : {
-                AND : [
-                    {
-                        dateTime : {
-                            gte : query.tanggal_mulai,
-                        }
-                    },
-                    {
-                        dateTime : {
-                            lte : query.tanggal_selesai
-                        }
-                    },
-                    {
-                        anggota : {
-                            nirp : {
-                                equals : query.nirp,
-                                mode : "insensitive"
-                            }
-                        }
-                    },
-                    {
-                        anggota : {
-                            nama : {
-                                contains : query.nama,
-                                mode : "insensitive"
-                            }
-                        }
-                    },
-                    {
-                        anggota : {
-                            pangkat : {
-                                equals : query.pangkat,
-                                mode : "insensitive"
-                            }
-                        }
-                    },
-                    {
-                        anggota : {
-                            satker : {
-                                equals : query.satker,
-                                mode : "insensitive"
-                            }
-                        }
-                    },
-                    {
-                        apel : {
-                            equals : query.apel
-                        }
-                    }
-                ]
-            },
-            skip : skip,
-            take : limit,
-            select : {
-                id : true,
-                id_anggota : true,
-                dateTime : true,
-                keterangan : true,
-                anggota : {
-                    select : {
-                        id : true,
-                        nama : true,
-                        nirp : true,
-                        jabatan : true,
-                        pangkat : true,
-                        satker : true,
-                    }
-                }
-            }
-        })
-
-        const totalData = await db.absensi.count({
-            where : {
-                AND : [
-                    {
-                        dateTime : {
-                            gte : query.tanggal_mulai,
-                        }
-                    },
-                    {
-                        dateTime : {
-                            lte : query.tanggal_selesai
-                        }
-                    },
-                    {
-                        anggota : {
-                            nirp : {
-                                equals : query.nirp,
-                                mode : "insensitive"
-                            }
-                        }
-                    },
-                    {
-                        anggota : {
-                            nama : {
-                                contains : query.nama,
-                                mode : "insensitive"
-                            }
-                        }
-                    },
-                    {
-                        anggota : {
-                            pangkat : {
-                                equals : query.pangkat,
-                                mode : "insensitive"
-                            }
-                        }
-                    },
-                    {
-                        anggota : {
-                            satker : {
-                                equals : query.satker,
-                                mode : "insensitive"
-                            }
-                        }
-                    },
-                    {
-                        apel : {
-                            equals : query.apel
-                        }
-                    }
-                ]
-            }
-        })
-
-        const totalPage = Math.ceil(totalData / limit)
+        const findAbsen = await searchAbsenUtils(query)
 
         return res.status(200).json({
             msg : "success",
-            data : {
-                absen : findAbsen,
-                totalData : totalData,
-                totalPage : totalPage
-            }
+            data : findAbsen
         })
     } catch (error) {
         next(error)
@@ -607,6 +474,28 @@ const findAbsenById = async (req,res,next) => {
         next(error)
     }
 }
+
+const convertPdfAbsen = async (req,res,next) => {
+    try {
+        const query = req.query
+
+        const findAbsen = await searchAbsenUtils(query)
+
+        const payloadPdf = {
+            start : query.tanggal_mulai,
+            end : query.tanggal_selesai,
+            data : findAbsen.absen
+        }
+
+        await generatePDFAbsen(payloadPdf,query.isLaporan)
+
+        return res.status(200).json({
+            msg : "success"
+        })
+    } catch (error) {
+        next(error)
+    }
+}
 export default {
     findAdmin,
 
@@ -623,5 +512,6 @@ export default {
     deleteAbsen,
     searchAbsen,
     getAllAbsenToday,
-    findAbsenById
+    findAbsenById,
+    convertPdfAbsen
 }

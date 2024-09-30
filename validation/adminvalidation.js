@@ -21,14 +21,14 @@ const addAbsenvalidation = joi.object({
     id_anggota : joi.number().required(),
     dateTime : joi.string().required(),
     keterangan : joi.string().required(),
-    apel : joi.valid("pagi","sore").required()
+    apel : joi.valid("pagi","siang").required()
 })
 const updateAbsenvalidation = joi.object({
     id_anggota : joi.number().optional(),
     String : joi.string().optional(),
     keterangan : joi.string().optional(),
     dateTime : joi.string().optional(),
-    apel : joi.valid("pagi","sore").optional()
+    apel : joi.valid("pagi","siang").optional()
 })
 
 const searchAnggota = joi.object({

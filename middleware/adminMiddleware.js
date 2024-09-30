@@ -3,6 +3,7 @@ import { db } from "../config/prismaClient.js"
 
 export const adminMiddleware = async (req,res,next) => {
     const token = req.cookies.access_token
+    console.log("admin");
 
     if(!token){
         return res.status(401).json({msg : "unauthorized"})
@@ -18,13 +19,13 @@ export const adminMiddleware = async (req,res,next) => {
         return user
     })
 
-    const findUser = await db.admin.findFirst({
+    const findAdmin = await db.admin.findFirst({
         where : {
             id : user.id
         }
     })
 
-    if(!findUser) {
+    if(!findAdmin) {
         return res.status(401).json({
             msg : "unauthorized"
         })
@@ -36,7 +37,7 @@ export const adminMiddleware = async (req,res,next) => {
         })
     }
     // console.log("hahahah");
-    req.admin = findUser
+    req.admin = findAdmin
     
      next()
 }

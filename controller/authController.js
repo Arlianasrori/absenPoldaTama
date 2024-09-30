@@ -9,7 +9,6 @@ const login = async (req,res,next) => {
         let data = req.body
         
         data = await validate(authValidation.loginValidation,data) 
-        console.log(data);
         
         
         const findAdmin = await db.admin.findFirst({
@@ -27,7 +26,7 @@ const login = async (req,res,next) => {
 
                 return res.status(200).json({
                     "msg" : "success",
-                    "role" : "user",
+                    "role" : "admin",
                     "data" : {
                         access_token,
                         refresh_token
@@ -87,7 +86,7 @@ const refresh_token_admin = async (req,res,next) => {
 
         return res.status(200).json({
                     "msg" : "success",
-                    "role" : "user",
+                    "role" : "admin",
                     "data" : {
                         access_token,
                         refresh_token
@@ -108,7 +107,7 @@ const refresh_token_anggota = async (req,res,next) => {
 
         return res.status(200).json({
                     "msg" : "success",
-                    "role" : "user",
+                    "role" : "anggota",
                     "data" : {
                         access_token,
                         refresh_token
