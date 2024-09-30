@@ -17,6 +17,30 @@ const updateAnggota = joi.object({
     password : joi.string().optional()
 })
 
+const addAbsenvalidation = joi.object({
+    id_anggota : joi.number().required(),
+    dateTime : joi.string().required(),
+    keterangan : joi.string().required(),
+    apel : joi.valid("pagi","sore").required()
+})
+const updateAbsenvalidation = joi.object({
+    id_anggota : joi.number().optional(),
+    String : joi.string().optional(),
+    keterangan : joi.string().optional(),
+    dateTime : joi.string().optional(),
+    apel : joi.valid("pagi","sore").optional()
+})
+
+const searchAnggota = joi.object({
+    nirp : joi.string().optional(),
+    nama : joi.string().optional(),
+    pangkat : joi.string().optional(),
+    jabatan : joi.string().optional(),
+    satker : joi.string().optional(),
+    page : joi.number().optional(),
+    limit : joi.number().optional()
+})
+
 export default {
-    addAnggota,updateAnggota
+    addAnggota,updateAnggota,addAbsenvalidation,updateAbsenvalidation,searchAnggota
 }

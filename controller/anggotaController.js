@@ -2,6 +2,7 @@ import { db } from "../config/prismaClient.js"
 import { validate } from "../validation/validate.js";
 import responseError from "../error/responseError.js";
 import absenValidation from "../validation/absenValidation.js";
+import { format } from 'date-fns';
 
 const addAbsen = async (req,res,next) => {
     try {
@@ -10,7 +11,7 @@ const addAbsen = async (req,res,next) => {
         let data = req.body
         data = await validate(absenValidation.addAbsen,data)
         data.id_anggota = id_anggota
-        data.dateTime = new Date()
+        data.dateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
         console.log(data);
 
         const addAbsen = await db.absensi.create({
@@ -29,11 +30,11 @@ const addAbsen = async (req,res,next) => {
 
 const getAllAbsenToday = async (req,res,next) => {
     try {
+        const id_anggota = req.anggota.id
         const now = new Date()
-        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-        console.log(start);
-        console.log(end);
+        const start = format(new Date(now.getFullYear(), now.getMonth(), now.getDate()), 'yyyy-MM-dd HH:mm:ss')
+        const end = format(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59), 'yyyy-MM-dd HH:mm:ss')
+        
         const findAllAbsen = await db.absensi.findMany({
             where : {
 
@@ -47,6 +48,9 @@ const getAllAbsenToday = async (req,res,next) => {
                         dateTime : {
                             lte : end
                         }
+                    },
+                    {
+                        id_anggota : id_anggota
                     }
                 ]
             },
@@ -55,7 +59,6 @@ const getAllAbsenToday = async (req,res,next) => {
                 id_anggota : true,
                 dateTime : true,
                 keterangan : true,
-                absen : true,
                 anggota : {
                     select : {
                         id : true,
@@ -110,8 +113,99 @@ const findAnggota = async (req,res,next) => {
     }  
 }
 
+const searchAbsen = async (req,res,next) => {
+    try {
+        const id = req.anggota.id
+        let query = await validate(absenValidation.searchAbsenValidation,req.query)
+
+        const page = query.page ? parseInt(query.page) : 1
+        const limit = query.limit ? parseInt(query.limit) : 10
+        const skip = (page - 1) * limit
+
+        const findAbsen = await db.absensi.findMany({
+            where : {
+                AND : [
+                    {
+                        dateTime : {
+                            gte : query.tanggal_mulai,
+                        }
+                    },
+                    {
+                        dateTime : {
+                            lte : query.tanggal_selesai
+                        }
+                    },
+                    {
+                        anggota : {
+                            id : {
+                                equals : id
+                            }
+                        }
+                    }
+                ]
+            },
+            skip : skip,
+            take : limit,
+            select : {
+                id : true,
+                id_anggota : true,
+                dateTime : true,
+                keterangan : true,
+                anggota : {
+                    select : {
+                        id : true,
+                        nama : true,
+                        nirp : true,
+                        jabatan : true,
+                        pangkat : true,
+                        satker : true,
+                    }
+                }
+            }
+        })
+
+        const totalData = await db.absensi.count({
+            where : {
+                AND : [
+                    {
+                        dateTime : {
+                            gte : query.tanggal_mulai,
+                        }
+                    },
+                    {
+                        dateTime : {
+                            lte : query.tanggal_selesai
+                        }
+                    },
+                    {
+                        anggota : {
+                            id : {
+                                equals : id
+                            }
+                        }
+                    }
+                ]
+            }
+        })
+
+        const totalPage = Math.ceil(totalData / limit)
+
+        return res.status(200).json({
+            msg : "success",
+            data : {
+                absen : findAbsen,
+                totalData : totalData,
+                totalPage : totalPage
+            }
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     addAbsen,
     getAllAbsenToday,
-    findAnggota
+    findAnggota,
+    searchAbsen
 }

@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken"
 import { db } from "../config/prismaClient.js"
 
-export const userMiddleware = async (req,res,next) => {
+export const adminMiddleware = async (req,res,next) => {
     const token = req.cookies.access_token
 
     if(!token){
@@ -18,7 +18,7 @@ export const userMiddleware = async (req,res,next) => {
         return user
     })
 
-    const findUser = await db.user.findFirst({
+    const findUser = await db.admin.findFirst({
         where : {
             id : user.id
         }
@@ -36,7 +36,7 @@ export const userMiddleware = async (req,res,next) => {
         })
     }
     // console.log("hahahah");
-    req.user = findUser
+    req.admin = findUser
     
      next()
 }

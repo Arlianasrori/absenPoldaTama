@@ -25,18 +25,24 @@ model anggota {
   absensi absensi[]
 }
 
+enum ApelAbsen {
+  pagi
+  sore
+}
+
 model absensi {
   id Int @id @default(autoincrement())
   id_anggota Int
-  dateTime DateTime
+  dateTime String
   keterangan String
-  absen String
+  apel ApelAbsen
 
   anggota anggota @relation(fields: [id_anggota],references: [id])
 }
 
-model user {
+model admin {
   id Int @id @default(autoincrement())
   nirp String @db.VarChar(12) @unique
+  nama String
   password String
 }
