@@ -22,7 +22,7 @@ app.use(
 );
 
 app.use(authRouter)
-app.use(anggotaRouter)
-app.use(adminRouter)
+app.use("/anggota",anggotaRouter)
+app.use("/admin",adminRouter)
 app.use(errorMiddleware)
 app.listen(3000,console.log("server is running on port 3000"))

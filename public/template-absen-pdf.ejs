@@ -22,9 +22,11 @@
         <h5 style="line-height: 0;">ABSENSI PAGI/SIANG ANGGOTA</h4>
         <h5 style="line-height: 0;text-decoration: underline;text-underline-offset: 3px;">SUBBID TEKINFO BID TIK POLDA NTB</h5>
     </div>
-    
-    <p style="font-size: 13px;">HARI: ____________</p>
-    <p style="font-size: 13px;">TANGGAL: ____________</p>
+    <% if (!start && !end) { %>
+        <p style="font-size: 13px;">TANGGAL: ____________</p>
+    <% } else { %>
+        <p style="font-size: 13px;">TANGGAL: <%= start ? start : "-" %> s/d <%= end ? end : "-" %></p>
+    <% } %>
     
     <table>
         <thead>
@@ -41,17 +43,19 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td style="font-size: 10px;">1</td>
-                <td style="font-size: 10px;">71080520</td>
-                <td style="font-size: 10px;">YAYAN HARTADI, SIK</td>
-                <td style="font-size: 10px;">KOMBES POL</td>
-                <td style="font-size: 10px;">KABID TIK</td>
-                <td style="font-size: 10px;">BID TIK</td>
-                <td style="font-size: 10px;">2024-07-01</td>
-                <td style="font-size: 10px;">PAGI</td>
-                <td style="font-size: 10px;">HADIR</td>
-            </tr>
+            <% data.forEach(function(item,index) { %>
+                <tr>
+                    <td style="font-size: 10px;">1</td>
+                    <td style="font-size: 10px;"><%= item.anggota.nirp %></td>
+                    <td style="font-size: 10px;"><%= item.anggota.nama %></td>
+                    <td style="font-size: 10px;"><%= item.anggota.pangkat %></td>
+                    <td style="font-size: 10px;"><%= item.anggota.jabatan %></td>
+                    <td style="font-size: 10px;"><%= item.anggota.satker %></td>
+                    <td style="font-size: 10px;"><%= item.dateTime %></td>
+                    <td style="font-size: 10px;"><%= item.apel %></td>
+                    <td style="font-size: 10px;"><%= item.keterangan %></td>
+                </tr>
+            <% }); %>
             <!-- Add more rows as needed -->
         </tbody>
     </table>

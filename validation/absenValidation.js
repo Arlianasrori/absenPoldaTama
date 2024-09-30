@@ -2,7 +2,7 @@ import joi from "joi"
 
 const addAbsen = joi.object({
     keterangan : joi.string().required(),
-    apel : joi.valid("pagi","sore").required()
+    apel : joi.valid("pagi","siang").required()
 })
 
 const searchAbsenValidation = joi.object({
@@ -13,9 +13,10 @@ const searchAbsenValidation = joi.object({
     satker : joi.string().optional(),
     tanggal_mulai : joi.string().optional(),
     tanggal_selesai : joi.string().optional(),
-    apel : joi.valid("pagi","sore").optional(),
+    apel : joi.valid("pagi","siang").optional(),
     page : joi.number().optional(),
-    limit : joi.number().optional()
+    limit : joi.number().optional(),
+    isLaporan : joi.boolean().optional()
 })
 
 export default {

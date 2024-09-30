@@ -27,7 +27,7 @@ model anggota {
 
 enum ApelAbsen {
   pagi
-  sore
+  siang
 }
 
 model absensi {
