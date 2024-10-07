@@ -1,5 +1,5 @@
 import { db } from "../config/prismaClient.js";
-import adminvalidation from "../validation/adminvalidation.js";
+import adminSatkerValidaiton from "../validation/adminSatkerValidation.js";
 import { validate } from "../validation/validate.js";
 import responseError from "../error/responseError.js";
 import { format } from 'date-fns';
@@ -9,9 +9,9 @@ import { generatePDFAbsen } from "../utils/convertToPdfAbsen.js";
 
 const findAdmin = async (req,res,next) => {
     try {
-        const id = req.admin.id
+        const id = req.adminSatker.id
 
-        const findAdmin = await db.admin.findFirst({
+        const findAdminSatker = await db.admin_satker.findFirst({
             where : {
                 id : id
             },
@@ -24,7 +24,7 @@ const findAdmin = async (req,res,next) => {
 
         res.status(200).json({
             msg : "success",
-            data : findAdmin
+            data : findAdminSatker
         })
 
     } catch (error) {
@@ -32,221 +32,12 @@ const findAdmin = async (req,res,next) => {
     }
 }
 
-// admin satker
-const addAdminSatker = async (req,res,next) => {
-    try {
-        let data = req.body
-        data = await validate(adminvalidation.addAdminSatker,data)
-
-        const findAdminSatkerBynirp = await db.admin_satker.findFirst({
-            where : {
-                nirp : data.nirp
-            }
-        })
-
-        if (findAdminSatkerBynirp) {
-            throw new responseError(400,"nirp telah ditambahkan")
-        }
-
-        const addAdminSatker = await db.admin_satker.create({
-            data : data
-        })
-        
-        return res.status(200).json({
-            msg : "success",
-            data : addAdminSatker
-        })
-    } catch (error) {
-        next(error)
-    }
-}
-
-const updateAdminSatker = async (req,res,next) => {
-    try {
-        const id = parseInt(req.params.id)
-        let data = req.body
-        data = await validate(adminvalidation.updateAdminSatker,data)
-
-        const findAdminSatkerById = await db.admin_satker.findUnique({
-            where : {
-                id : id
-            }
-        })
-
-        if (!findAdminSatkerById) {
-            throw new responseError(404,"admin satker tidak ditemukan")
-        }
-
-        if (data.nirp) {
-            const findAdminSatkerBynirp = await db.admin_satker.findFirst({
-                where : {
-                    AND : [
-                        {
-                            nirp : data.nirp
-                        },
-                        {
-                            id : {
-                                not : findAdminSatkerById.nirp
-                            }
-                        }
-                    ]
-                }
-            })
-
-            if (findAdminSatkerBynirp) {
-                throw new responseError(400,"nirp sudah digunakan")
-            }
-        }
-
-        const updateAdminSatker = await db.admin_satker.update({
-            where : {
-                id : id
-            },
-            data : data
-        })
-
-        return res.status(200).json({
-            msg : "success",
-            data : updateAdminSatker
-        })
-        
-        
-    } catch (error) {
-        next(error)
-    }
-}
-
-const deleteAdminSatker = async (req,res,next) => {
-    try {
-        const id = parseInt(req.params.id)
-
-        const findAdminSatkerById = await db.admin_satker.findUnique({
-            where : {
-                id : id
-            }
-        })
-
-        if (!findAdminSatkerById) {
-            throw new responseError(404,"admin satker tidak ditemukan")
-        }
-
-        const deleteAdminSatker = await db.admin_satker.delete({
-            where : {
-                id : id
-            }
-        })
-
-        return res.status(200).json({
-            msg : "success",
-            data : deleteAdminSatker
-        })
-    } catch (error) {
-        next(error)
-    }
-}
-
-const getAllAdminSatker = async (req,res,next) => {
-    try {
-        const allAdminSatker = await db.admin_satker.findMany({           
-        })
-
-        return res.status(200).json({
-            msg : "success",
-            data : allAdminSatker
-        })
-    } catch (error) {
-        next(error)
-    }
-}
-
-const searchAdminSatker = async (req,res,next) => {
-    try {
-        let query = await validate(adminvalidation.searchAdminSatker,req.query)
-
-        const skip = (query.page - 1) * query.limit
-
-        const whereQuery = {
-            AND : [
-                {
-                    nirp : {
-                        equals : query.nirp,
-                        mode : "insensitive"
-                    }
-                },
-                {
-                    nama : {
-                        contains : query.nama,
-                        mode : "insensitive"
-                    }
-                },
-                {
-                    satker : {
-                        equals : query.satker,
-                        mode : "insensitive"
-                    }
-                }
-            ]
-        }
-
-        const findAdminSatker = await db.admin_satker.findMany({
-            where : whereQuery,
-            skip : skip,
-            take : query.limit,
-            select : {
-                id : true,
-                nama : true,
-                nirp : true
-            }
-        })
-
-        const totalData = await db.admin_satker.count({
-            where : whereQuery
-        })
-
-        const totalPage = Math.ceil(totalData / limit)
-
-        return res.status(200).json({
-            msg : "success",
-            data : {
-                adminSatker : findAdminSatker,
-                totalData : totalData,
-                totalPage : totalPage
-            }
-        })
-    } catch (error) {
-        next(error)
-    }
-}
-
-const getAdminSatkerById = async (req,res,next) => {
-    try {
-        const id = parseInt(req.params.id)
-
-        const findAdminSatkerById = await db.admin_satker.findUnique({
-            where : {
-                id : id
-            }
-        })
-
-        if (!findAdminSatkerById) {
-            throw new responseError(404,"admin satker tidak ditemukan")
-        }
-
-        return res.status(200).json({
-            msg : "success",
-            data : findAdminSatkerById
-        })
-        
-    } catch (error) {
-        next(error)
-    }
-}
 
 // anggota
 const addAnggota = async (req,res,next) => {
     try {
         let data = req.body
-        data = await validate(adminvalidation.addAnggota,data)
+        data = await validate(adminSatkerValidaiton.addAnggota,data)
 
         const findAnggotaBynirp = await db.anggota.findFirst({
             where : {
@@ -258,6 +49,7 @@ const addAnggota = async (req,res,next) => {
             throw new responseError(400,"nirp telah ditambahkan")
         }
 
+        data.satker = req.adminSatker.satker
         const addAnggota = await db.anggota.create({
             data : data
         }) 
@@ -276,6 +68,9 @@ const addAnggota = async (req,res,next) => {
 const getAllAnggota = async (req,res,next) => {
     try {
         const allAnggota = await db.anggota.findMany({
+            where : {
+                satker : req.adminSatker.satker
+            }
         })
 
         return res.status(200).json({
@@ -294,7 +89,8 @@ const findAnggotaById = async (req,res,next) => {
         
         const findAnggotaById = await db.anggota.findUnique({
             where : {
-                id : id
+                id : id,
+                satker : req.adminSatker.satker
             }
         })
 
@@ -315,11 +111,12 @@ const updateAnggota = async (req,res,next) => {
     try {
         const id = parseInt(req.params.id)
         let data = req.body
-        data = await validate(adminvalidation.updateAnggota,data)
+        data = await validate(adminSatkerValidaiton.updateAnggota,data)
         
         const findAnggotaById = await db.anggota.findFirst({
             where : {
-                id : id
+                id : id,
+                satker : req.adminSatker.satker
             }
         })
 
@@ -360,7 +157,8 @@ const deleteAnggota = async (req,res,next) => {
         
         const findAnggotaById = await db.anggota.findUnique({
             where : {
-                id : id
+                id : id,
+                satker : req.adminSatker.satker
             }
         })
 
@@ -386,14 +184,20 @@ const deleteAnggota = async (req,res,next) => {
 
 const searchAnggota = async (req,res,next) => {
     try {
-        let query = await validate(adminvalidation.searchAnggota,req.query)
+        let query = await validate(adminSatkerValidaiton.searchAnggota,req.query)
 
         const page = query.page ? parseInt(query.page) : 1
         const limit = query.limit ? parseInt(query.limit) : 10
         const skip = (page - 1) * limit
 
-        whereQuery = {
+        const whereQuery = {
             AND : [
+                {
+                    satker : {
+                        equals : req.adminSatker.satker,
+                        mode : "insensitive"
+                    }
+                },
                 {
                     nirp : {
                         equals : query.nirp,
@@ -426,7 +230,6 @@ const searchAnggota = async (req,res,next) => {
                 }
             ]
         }
-
         const findAnggota = await db.anggota.findMany({
             where : whereQuery,
             skip : skip,
@@ -463,11 +266,12 @@ const searchAnggota = async (req,res,next) => {
 // absen
 const addAbsen = async (req,res,next) => {
     try {
-        let data = await validate(adminvalidation.addAbsenvalidation,req.body)
+        let data = await validate(adminSatkerValidaiton.addAbsenvalidation,req.body)
 
         let findAnggotaById = await db.anggota.findUnique({
             where : {
-                id : data.id_anggota
+                id : data.id_anggota,
+                satker : req.adminSatker.satker
             }
         })
 
@@ -492,11 +296,14 @@ const updateAbsen = async (req,res,next) => {
     try {
         const id = parseInt(req.params.id)
         console.log(id);
-        let data = await validate(adminvalidation.updateAbsenvalidation,req.body)
+        let data = await validate(adminSatkerValidaiton.updateAbsenvalidation,req.body)
 
         let findAbsenById = await db.absensi.findUnique({
             where : {
-                id : id
+                id : id,
+                anggota : {
+                    satker : req.adminSatker.satker
+                }
             }
         })
 
@@ -526,7 +333,10 @@ const deleteAbsen = async (req,res,next) => {
         
         const findAbsenById = await db.absensi.findUnique({
             where : {
-                id : id
+                id : id,
+                anggota : {
+                    satker : req.adminSatker.satker
+                }
             }
         })
 
@@ -553,7 +363,7 @@ const searchAbsen = async (req,res,next) => {
     try {
         const query = req.query
 
-        const findAbsen = await searchAbsenUtils(query)
+        const findAbsen = await searchAbsenUtils(query,req.adminSatker.satker)
 
         return res.status(200).json({
             msg : "success",
@@ -572,8 +382,13 @@ const getAllAbsenToday = async (req,res,next) => {
         
         const findAllAbsen = await db.absensi.findMany({
             where : {
-
                 AND : [
+                    {
+                        satker : {
+                            equals : req.adminSatker.satker,
+                            mode : "insensitive"
+                        }
+                    },
                     {
                         dateTime : {
                             gte : start,
@@ -619,7 +434,10 @@ const findAbsenById = async (req,res,next) => {
 
         const findAbsenById = await db.absensi.findUnique({
             where : {
-                id : id
+                id : id,
+                anggota : {
+                    satker : req.adminSatker.satker
+                }
             },
             select : {
                 id : true,
@@ -657,7 +475,7 @@ const convertPdfAbsen = async (req,res,next) => {
     try {
         const query = req.query
 
-        const findAbsen = await searchAbsenUtils(query)
+        const findAbsen = await searchAbsenUtils(query,req.adminSatker.satker)
 
         const payloadPdf = {
             start : query.tanggal_mulai,
@@ -676,15 +494,6 @@ const convertPdfAbsen = async (req,res,next) => {
 }
 export default {
     findAdmin,
-
-    // admin satker
-    addAdminSatker,
-    getAllAdminSatker,
-    getAdminSatkerById,
-    updateAdminSatker,
-    deleteAdminSatker,
-    searchAdminSatker,
-
 
     // anggota
     addAnggota,

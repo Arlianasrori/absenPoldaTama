@@ -10,7 +10,7 @@ const login = async (req,res,next) => {
         
         data = await validate(authValidation.loginValidation,data) 
         
-        
+        // admin
         const findAdmin = await db.admin.findFirst({
             where : {
                 nirp : data.nirp
@@ -35,6 +35,8 @@ const login = async (req,res,next) => {
             }
         }
 
+
+        // anggota
         const findAnggota = await db.anggota.findFirst({
             where : {
                 nirp : data.nirp
@@ -51,6 +53,32 @@ const login = async (req,res,next) => {
                 return res.status(200).json({
                     "msg" : "success",
                     "role" : "anggota",
+                    "data" : {
+                        access_token,
+                        refresh_token
+                    }
+                })
+            }
+        }
+
+
+        // satker
+        const findAdminSatker = await db.admin_satker.findFirst({
+            where : {
+                nirp : data.nirp
+            }
+        })
+
+        if (findAdminSatker) {
+            if (data.password == findAdminSatker.password) {
+                const access_token = jwt.sign({id : findAdminSatker.id},process.env.ACCESS_KEY_ANGGOTA,{expiresIn : "1d"})
+                const refresh_token = jwt.sign({id : findAdminSatker.id},process.env.ACCESS_KEY_ANGGOTA,{expiresIn : "10d"})
+                res.cookie("access_token",access_token)
+                res.cookie("refresh_token",refresh_token)
+
+                return res.status(200).json({
+                    "msg" : "success",
+                    "role" : "admin_satker",
                     "data" : {
                         access_token,
                         refresh_token
@@ -97,6 +125,28 @@ const refresh_token_admin = async (req,res,next) => {
     }
 }
 
+const refresh_token_admin_satker = async (req,res,next) => {
+    try {
+        const user = req.adminSatker
+        const access_token = jwt.sign({id : user.id},process.env.ACCESS_KEY_ADMIN_SATKER,{expiresIn : "1d"})
+        const refresh_token = jwt.sign({id : user.id},process.env.ACCESS_KEY_ADMIN_SATKER,{expiresIn : "10d"})
+        res.cookie("access_token",access_token)
+        res.cookie("refresh_token",refresh_token)
+
+        return res.status(200).json({
+                    "msg" : "success",
+                    "role" : "admin_satker",
+                    "data" : {
+                        access_token,
+                        refresh_token
+                    }     
+                })
+    } catch(errr) {
+        next(errr)
+    }
+}
+
+
 const refresh_token_anggota = async (req,res,next) => {
     try {
         const anggota = req.anggota 
@@ -122,5 +172,6 @@ export default {
     login,
     logout,
     refresh_token_admin,
+    refresh_token_admin_satker,
     refresh_token_anggota
 }

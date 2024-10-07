@@ -30,17 +30,35 @@ enum ApelAbsen {
   siang
 }
 
+enum KeteranganAbsen {
+  HADIR
+  PENDIDIKAN
+  IZIN
+  CUTI
+  SAKIT
+  TAHANAN
+  TUGAs
+  TANPA_KETERANGAN
+}
+
 model absensi {
   id Int @id @default(autoincrement())
   id_anggota Int
   dateTime String
-  keterangan String
+  keterangan KeteranganAbsen
   apel ApelAbsen
 
   anggota anggota @relation(fields: [id_anggota],references: [id])
 }
 
 model admin {
+  id Int @id @default(autoincrement())
+  nirp String @db.VarChar(12) @unique
+  nama String
+  password String
+}
+
+model admin_satker {
   id Int @id @default(autoincrement())
   nirp String @db.VarChar(12) @unique
   nama String

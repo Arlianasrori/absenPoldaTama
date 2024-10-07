@@ -15,16 +15,18 @@
     "@ironsoftware/ironpdf": "^2024.9.1",
     "@ironsoftware/ironpdf-engine-linux-x64": "^2024.9.1",
     "@prisma/client": "^5.19.1",
-    "cookie-parser": "^1.4.6",
+    "cookie-parser": "^1.0.0",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
-    "express": "^4.19.2",
+    "express": "^4.21.0",
     "html-pdf": "^3.0.1",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
-    "prisma": "^5.19.1",
     "puppeteer": "^23.4.1",
     "random-string": "^0.2.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.20.0"
   }
 }
