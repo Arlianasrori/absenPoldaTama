@@ -32,8 +32,8 @@ export const adminSatkerMiddleware = async (req,res,next) => {
     }
 
     if(adminSatker.status == 401){
-        return res.status(user.status).json({
-            msg : user.msg
+        return res.status(adminSatker.status).json({
+            msg : adminSatker.msg
         })
     }
 

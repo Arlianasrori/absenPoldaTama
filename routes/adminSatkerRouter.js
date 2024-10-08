@@ -7,7 +7,7 @@ export const adminSatkerRouter = express.Router()
 
 adminSatkerRouter.use(adminSatkerMiddleware)
 
-adminSatkerRouter.get("/admin",adminSatkerController.findAdmin)
+adminSatkerRouter.get("/findAdminSatker",adminSatkerController.findAdmin)
 
 // anggota
 adminSatkerRouter.post("/anggota",adminSatkerController.addAnggota)

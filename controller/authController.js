@@ -71,8 +71,8 @@ const login = async (req,res,next) => {
 
         if (findAdminSatker) {
             if (data.password == findAdminSatker.password) {
-                const access_token = jwt.sign({id : findAdminSatker.id},process.env.ACCESS_KEY_ANGGOTA,{expiresIn : "1d"})
-                const refresh_token = jwt.sign({id : findAdminSatker.id},process.env.ACCESS_KEY_ANGGOTA,{expiresIn : "10d"})
+                const access_token = jwt.sign({id : findAdminSatker.id},process.env.ACCESS_KEY_ADMIN_SATKER,{expiresIn : "1d"})
+                const refresh_token = jwt.sign({id : findAdminSatker.id},process.env.ACCESS_KEY_ADMIN_SATKER,{expiresIn : "10d"})
                 res.cookie("access_token",access_token)
                 res.cookie("refresh_token",refresh_token)
 

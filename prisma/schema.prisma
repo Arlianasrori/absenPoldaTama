@@ -62,5 +62,6 @@ model admin_satker {
   id Int @id @default(autoincrement())
   nirp String @db.VarChar(12) @unique
   nama String
+  satker String
   password String
 }

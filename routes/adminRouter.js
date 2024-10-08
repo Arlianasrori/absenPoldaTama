@@ -6,7 +6,7 @@ export const adminRouter = express.Router()
 
 adminRouter.use(adminMiddleware)
 
-adminRouter.get("/admin",adminController.findAdmin)
+adminRouter.get("/findAdmin",adminController.findAdmin)
 
 // admin satker
 adminRouter.post("/admin-satker",adminController.addAdminSatker)

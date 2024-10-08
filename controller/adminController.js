@@ -102,7 +102,13 @@ const updateAdminSatker = async (req,res,next) => {
             where : {
                 id : id
             },
-            data : data
+            data : data,
+            select : {
+                id : true,
+                nirp : true,
+                nama : true,
+                satker : true
+            }
         })
 
         return res.status(200).json({
@@ -133,6 +139,12 @@ const deleteAdminSatker = async (req,res,next) => {
         const deleteAdminSatker = await db.admin_satker.delete({
             where : {
                 id : id
+            },
+            select : {
+                id : true,
+                nirp : true,
+                nama : true,
+                satker : true
             }
         })
 
@@ -147,7 +159,13 @@ const deleteAdminSatker = async (req,res,next) => {
 
 const getAllAdminSatker = async (req,res,next) => {
     try {
-        const allAdminSatker = await db.admin_satker.findMany({           
+        const allAdminSatker = await db.admin_satker.findMany({     
+            select : {
+                id : true,
+                nirp : true,
+                nama : true,
+                satker : true
+            }      
         })
 
         return res.status(200).json({
@@ -195,15 +213,16 @@ const searchAdminSatker = async (req,res,next) => {
             select : {
                 id : true,
                 nama : true,
-                nirp : true
+                nirp : true,
+                satker : true
             }
         })
 
         const totalData = await db.admin_satker.count({
             where : whereQuery
         })
-
-        const totalPage = Math.ceil(totalData / limit)
+        console.log(query.limit);
+        const totalPage = Math.ceil(totalData / query.limit)
 
         return res.status(200).json({
             msg : "success",
@@ -225,6 +244,12 @@ const getAdminSatkerById = async (req,res,next) => {
         const findAdminSatkerById = await db.admin_satker.findUnique({
             where : {
                 id : id
+            },
+            select : {
+                id : true,
+                nirp : true,
+                nama : true,
+                satker : true
             }
         })
 
@@ -259,7 +284,15 @@ const addAnggota = async (req,res,next) => {
         }
 
         const addAnggota = await db.anggota.create({
-            data : data
+            data : data,
+            select : {
+                id : true,
+                nama : true,
+                nirp : true,
+                pangkat : true,
+                jabatan : true,
+                satker : true
+            }
         }) 
 
         res.status(200).json({
@@ -276,6 +309,14 @@ const addAnggota = async (req,res,next) => {
 const getAllAnggota = async (req,res,next) => {
     try {
         const allAnggota = await db.anggota.findMany({
+            select : {
+                id : true,
+                nama : true,
+                nirp : true,
+                pangkat : true,
+                jabatan : true,
+                satker : true
+            }
         })
 
         return res.status(200).json({
@@ -295,6 +336,14 @@ const findAnggotaById = async (req,res,next) => {
         const findAnggotaById = await db.anggota.findUnique({
             where : {
                 id : id
+            },
+            select : {
+                id : true,
+                nama : true,
+                nirp : true,
+                pangkat : true,
+                jabatan : true,
+                satker : true
             }
         })
 
@@ -343,7 +392,15 @@ const updateAnggota = async (req,res,next) => {
             where : {
                 id : id
             },
-            data : data
+            data : data,
+            select : {
+                id : true,
+                nama : true,
+                nirp : true,
+                pangkat : true,
+                jabatan : true,
+                satker : true
+            }
         })
         return res.status(200).json({
             msg : "success",
@@ -372,6 +429,14 @@ const deleteAnggota = async (req,res,next) => {
             {
                 where : {
                     id : id
+                },
+                select : {
+                    id : true,
+                    nama : true,
+                    nirp : true,
+                    pangkat : true,
+                    jabatan : true,
+                    satker : true
                 }
             }
         )

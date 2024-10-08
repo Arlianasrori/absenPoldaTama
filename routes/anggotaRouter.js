@@ -5,7 +5,7 @@ import { anggotaMiddleware } from "../middleware/anggotaMiddleware.js"
 export const anggotaRouter = express.Router()
 
 anggotaRouter.use(anggotaMiddleware)
-anggotaRouter.get("",anggotaController.findAnggota)
+anggotaRouter.get("/findAnggota",anggotaController.findAnggota)
 
 // absen
 anggotaRouter.post("/absen",anggotaController.addAbsen)

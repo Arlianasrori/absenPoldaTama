@@ -384,9 +384,11 @@ const getAllAbsenToday = async (req,res,next) => {
             where : {
                 AND : [
                     {
-                        satker : {
-                            equals : req.adminSatker.satker,
-                            mode : "insensitive"
+                        anggota : {
+                            satker : {
+                                equals : req.adminSatker.satker,
+                                mode : "insensitive"
+                            }
                         }
                     },
                     {

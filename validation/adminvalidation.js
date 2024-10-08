@@ -44,6 +44,7 @@ const searchAnggota = joi.object({
 const addAdminSatker = joi.object({
     nirp : joi.string().required(),
     nama : joi.string().required(),
+    satker : joi.string().required(),
     password : joi.string().required()
 })
 
@@ -56,7 +57,7 @@ const updateAdminSatker = joi.object({
 const searchAdminSatker = joi.object({
     nirp : joi.string().optional(),
     nama : joi.string().optional(),
-    satker : joi.string().required(),
+    satker : joi.string().optional(),
     page : joi.number().optional().default(1),
     limit : joi.number().optional().default(10)
 })
