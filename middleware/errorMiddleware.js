@@ -2,6 +2,8 @@ import responseError from "../error/responseError.js"
 import { Prisma } from '@prisma/client'
 export const errorMiddleware = (err,req,res,next) => {
     if(err instanceof responseError){
+        console.log(err);
+        
         return res.status(err.status).json({
             msg : err.message,
             stack : err.stack

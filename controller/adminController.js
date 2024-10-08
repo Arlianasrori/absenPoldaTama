@@ -107,28 +107,45 @@ const updateAnggota = async (req,res,next) => {
         const id = parseInt(req.params.id)
         let data = req.body
         data = await validate(adminvalidation.updateAnggota,data)
+
+        console.log(data);
+        
         
         const findAnggotaById = await db.anggota.findFirst({
             where : {
                 id : id
             }
+            
         })
+        
+        console.log(findAnggotaById);
 
         if (!findAnggotaById) {
             throw new responseError(404,"anggota tidak ditemukan")
         }
 
-        if (data.nirp) {
-            const findAnggotaByNirp = await db.anggota.findUnique({
-                where : {
-                    nirp : data.nirp
-                }
-            })
+        // if (data.nirp) {
+        //     const findAnggotaByNirp = await db.anggota.findUnique({
+        //         where : {
+        //             AND : [
+        //                 {
+        //                     NOT : {
+        //                         nirp : findAnggotaById.nirp
+        //                     }
+        //                 },
+        //                 {
+        //                     nirp : data.nirp
+        //                 }
+        //             ]
+        //         }
+        //     })
 
-            if (findAnggotaByNirp) {
-                throw responseError(400,"nirp sudah digunakan")
-            }
-        }
+        //     if (findAnggotaByNirp) {
+        //         console.log("kontol");
+                
+        //         throw responseError(400,"nirp sudah digunakan")
+        //     }
+        // }
 
         const updateAnggota = await db.anggota.update({
             where : {
