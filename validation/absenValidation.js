@@ -1,7 +1,7 @@
 import joi from "joi"
 
 const addAbsen = joi.object({
-    keterangan : joi.valid("HADIR","PENDIDIKAN","IZIN","CUTI","SAKIT","TAHANAN","TUGAS","TANPA_KETERANGAN").required(),
+    keterangan : joi.valid("H","DIK","I","C","S","TH","TG","TK").required(),
     apel : joi.valid("pagi","siang").required()
 })
 
@@ -11,7 +11,7 @@ const searchAbsenValidation = joi.object({
     pangkat : joi.string().optional(),
     jabatan : joi.string().optional(),
     satker : joi.string().optional(),
-    keterangan : joi.valid("HADIR","PENDIDIKAN","IZIN","CUTI","SAKIT","TAHANAN","TUGAS","TANPA_KETERANGAN").optional(),
+    keterangan : joi.valid("H","DIK","I","C","S","TH","TG","TK").optional(),
     tanggal_mulai : joi.string().optional(),
     tanggal_selesai : joi.string().optional(),
     apel : joi.valid("pagi","siang").optional(),

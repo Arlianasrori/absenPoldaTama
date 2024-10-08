@@ -18,13 +18,13 @@ const updateAnggota = joi.object({
 const addAbsenvalidation = joi.object({
     id_anggota : joi.number().required(),
     dateTime : joi.string().required(),
-    keterangan : joi.valid("HADIR","PENDIDIKAN","IZIN","CUTI","SAKIT","TAHANAN","TUGAS","TANPA_KETERANGAN").required(),
+    keterangan : joi.valid("H","DIK","I","C","S","TH","TG","TK").required(),
     apel : joi.valid("pagi","siang").required()
 })
 const updateAbsenvalidation = joi.object({
     id_anggota : joi.number().optional(),
     String : joi.string().optional(),
-    keterangan : joi.valid("HADIR","PENDIDIKAN","IZIN","CUTI","SAKIT","TAHANAN","TUGAS","TANPA_KETERANGAN").optional(),
+    keterangan : joi.valid("H","DIK","I","C","S","TH","TG","TK").optional(),
     dateTime : joi.string().optional(),
     apel : joi.valid("pagi","siang").optional()
 })

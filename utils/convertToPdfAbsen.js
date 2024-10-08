@@ -2,7 +2,6 @@ import puppeteer from 'puppeteer';
 import * as ejs from 'ejs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import randomString from "random-string"
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -15,17 +14,9 @@ export async function generatePDFAbsen(data,islaporan) {
     let templatePath = ""
     
     if(islaporan){
-      templatePath = join(__dirname, `../public/laporan/laporanAbsen(${randomString({
-        length : 4,
-        numbers : true,
-        letters : false
-      })})-${data.start ? data.start : "-"}-${data.end ? data.end : "-"}.pdf`);
+      templatePath = join(__dirname, `../public/laporan/laporanAbsen(${data.start ? data.start : "-"} - ${data.end ? data.end : "-"}).pdf`);
     }else{
-      templatePath = join(__dirname, `../public/rekap/rekapAbsen(${randomString({
-        length : 4,
-        numbers : true,
-        letters : false
-      })})-${data.start ? data.start : "-"}-${data.end ? data.end : "-"}.pdf`);
+      templatePath = join(__dirname, `../public/rekap/rekapAbsen(${data.start ? data.start : "-"} - ${data.end ? data.end : "-"}).pdf`);
     }
     
     const path = join(__dirname, "../public/template-absen-pdf.ejs");
