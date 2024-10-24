@@ -279,13 +279,36 @@ const addAbsen = async (req,res,next) => {
             throw new responseError(404,"anggota tidak ditemukan")
         }
 
-        const addAbsen = await db.absensi.create({
-            data : data
-        })
+        db.$transaction(async (tx) => {
+            const addAbsen = await tx.absensi.create({
+                data : data
+            })
 
-        return res.status(200).json({
-            msg : "success",
-            data : addAbsen
+            if (data.alasan) {
+                const allowAlasan = ["I","C"]
+                if (!allowAlasan.includes(data.keterangan)) {
+                    throw new responseError(400,"alasan absen hanya bisa untuk izin dan cuti")
+                }
+                
+                const addAlasanAbsen = await tx.alasanAbsensi.create({
+                    data : data.alasan
+                })
+                return res.status(200).json({
+                    msg : "success",
+                    data : {
+                        ...addAbsen,
+                        alasan : addAlasanAbsen
+                    }
+                })
+            }else {
+                return res.status(200).json({
+                    msg : "success",
+                    data : {
+                        ...addAbsen,
+                        alasan : null
+                    }
+                })
+            }
         })
     } catch (error) {
         next(error)
@@ -317,10 +340,23 @@ const updateAbsen = async (req,res,next) => {
             },
             data : data
         })
+
+        let updateAlasan = null
+        if (data.alasan) {
+            updateAlasan = await db.alasanAbsensi.update({
+                where : {
+                    id_absen : id
+                },
+                data : data.alasan
+            })
+        }
         return res.status(200).json({
             msg : "success",
-            data : updateAbsen
-        })      
+            data : {
+                ...updateAbsen,
+                alasan : updateAlasan
+            }
+        })   
     } catch (error) {
         next(error)
     }
@@ -408,6 +444,7 @@ const getAllAbsenToday = async (req,res,next) => {
                 id_anggota : true,
                 dateTime : true,
                 keterangan : true,
+                alasan : true,
                 anggota : {
                     select : {
                         id : true,
@@ -446,6 +483,7 @@ const findAbsenById = async (req,res,next) => {
                 id_anggota : true,
                 dateTime : true,
                 keterangan : true,
+                alasan : true,
                 anggota : {
                     select : {
                         id : true,

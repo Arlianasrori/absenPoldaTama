@@ -38,21 +38,19 @@
                 <th style="font-size: 10px;">Jabatan</th>
                 <th style="font-size: 10px;">Satker</th>
                 <th style="font-size: 10px;">Tanggal</th>
-                <th style="font-size: 10px;">Apel</th>
                 <th style="font-size: 10px;">KET</th>
             </tr>
         </thead>
         <tbody>
             <% data.forEach(function(item,index) { %>
                 <tr>
-                    <td style="font-size: 10px;">1</td>
+                    <td style="font-size: 10px;"><%= index + 1 %></td>
                     <td style="font-size: 10px;"><%= item.anggota.nirp %></td>
                     <td style="font-size: 10px;"><%= item.anggota.nama %></td>
                     <td style="font-size: 10px;"><%= item.anggota.pangkat %></td>
                     <td style="font-size: 10px;"><%= item.anggota.jabatan %></td>
                     <td style="font-size: 10px;"><%= item.anggota.satker %></td>
                     <td style="font-size: 10px;"><%= item.dateTime %></td>
-                    <td style="font-size: 10px;"><%= item.apel %></td>
                     <td style="font-size: 10px;"><%= item.keterangan %></td>
                 </tr>
             <% }); %>

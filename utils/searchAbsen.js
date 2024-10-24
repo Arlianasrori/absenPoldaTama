@@ -5,10 +5,6 @@ import absenValidation from "../validation/absenValidation.js";
 export const searchAbsen = async (query,satker) => {
     query = await validate(absenValidation.searchAbsenValidation,query)
 
-    const page = query.page ? parseInt(query.page) : 1
-    const limit = query.limit ? parseInt(query.limit) : 10
-    const skip = (page - 1) * limit
-
     const whereQuery = {
         AND : [
             {
@@ -57,25 +53,18 @@ export const searchAbsen = async (query,satker) => {
                         mode : "insensitive"
                     }
                 }
-            },
-            {
-                apel : {
-                    equals : query.apel
-                }
             }
         ]
     }
 
     const findAbsen = await db.absensi.findMany({
         where : whereQuery,
-        skip : skip,
-        take : limit,
         select : {
             id : true,
             id_anggota : true,
             dateTime : true,
             keterangan : true,
-            apel : true,
+            alasan : true,
             anggota : {
                 select : {
                     id : true,
@@ -89,15 +78,8 @@ export const searchAbsen = async (query,satker) => {
         }
     })
 
-    const totalData = await db.absensi.count({
-        where : whereQuery
-    })
-
-    const totalPage = Math.ceil(totalData / limit)
 
     return {
-        absen : findAbsen,
-        totalData : totalData,
-        totalPage : totalPage
+        absen : findAbsen
     }
 }

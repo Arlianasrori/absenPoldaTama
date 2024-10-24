@@ -14,14 +14,38 @@ const addAbsen = async (req,res,next) => {
         data.dateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
         console.log(data);
 
-        const addAbsen = await db.absensi.create({
-            data : data
+        db.$transaction(async (tx) => {
+            const addAbsen = await tx.absensi.create({
+                data : data
+            })
+
+            if (data.alasan) {
+                const allowAlasan = ["I","C"]
+                if (!allowAlasan.includes(data.keterangan)) {
+                    throw new responseError(400,"alasan absen hanya bisa untuk izin dan cuti")
+                }
+                
+                const addAlasanAbsen = await tx.alasanAbsensi.create({
+                    data : data.alasan
+                })
+                return res.status(200).json({
+                    msg : "success",
+                    data : {
+                        ...addAbsen,
+                        alasan : addAlasanAbsen
+                    }
+                })
+            }else {
+                return res.status(200).json({
+                    msg : "success",
+                    data : {
+                        ...addAbsen,
+                        alasan : null
+                    }
+                })
+            }
         })
 
-        return res.status(200).json({
-            msg : "success",
-            data : addAbsen
-        })
     } catch (error) {
         next(error)
     }
@@ -59,6 +83,7 @@ const getAllAbsenToday = async (req,res,next) => {
                 id_anggota : true,
                 dateTime : true,
                 keterangan : true,
+                alasan : true,
                 anggota : {
                     select : {
                         id : true,
@@ -151,6 +176,7 @@ const searchAbsen = async (req,res,next) => {
                 id_anggota : true,
                 dateTime : true,
                 keterangan : true,
+                alasan : true,
                 anggota : {
                     select : {
                         id : true,

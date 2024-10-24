@@ -25,11 +25,6 @@ model anggota {
   absensi absensi[]
 }
 
-enum ApelAbsen {
-  pagi
-  siang
-}
-
 enum KeteranganAbsen {
   H
   DIK
@@ -46,9 +41,17 @@ model absensi {
   id_anggota Int
   dateTime String
   keterangan KeteranganAbsen
-  apel ApelAbsen
-
   anggota anggota @relation(fields: [id_anggota],references: [id])
+  alasan alasanAbsensi?
+}
+
+model alasanAbsensi {
+  id Int @id @default(autoincrement())
+  id_absen Int @unique
+  alasan String
+  file String?
+
+  absen absensi @relation(fields: [id_absen],references: [id])
 }
 
 model admin {
