@@ -5,7 +5,9 @@ import responseError from "../error/responseError.js";
 import { format } from 'date-fns';
 import { searchAbsen as searchAbsenUtils } from "../utils/searchAbsen.js";
 import { generatePDFAbsen } from "../utils/convertToPdfAbsen.js";
-
+import { readPdf } from "../utils/readPdf.js";
+import { generateId } from "../utils/generateId.js";
+import { keteranganAbsenList } from "../utils/keteranganAbsenList.js";
 
 const findAdmin = async (req,res,next) => {
     try {
@@ -38,6 +40,7 @@ const addAdminSatker = async (req,res,next) => {
     try {
         let data = req.body
         data = await validate(adminvalidation.addAdminSatker,data)
+        data.id = generateId()
 
         const findAdminSatkerBynirp = await db.admin_satker.findFirst({
             where : {
@@ -275,6 +278,7 @@ const addAnggota = async (req,res,next) => {
     try {
         let data = req.body
         data = await validate(adminvalidation.addAnggota,data)
+        data.id = generateId()
 
         const findAnggotaBynirp = await db.anggota.findFirst({
             where : {
@@ -549,6 +553,7 @@ const searchAnggota = async (req,res,next) => {
 const addAbsen = async (req,res,next) => {
     try {
         let data = await validate(adminvalidation.addAbsenvalidation,req.body)
+        data.id = generateId()
 
         let findAnggotaById = await db.anggota.findUnique({
             where : {
@@ -560,13 +565,49 @@ const addAbsen = async (req,res,next) => {
             throw new responseError(404,"anggota tidak ditemukan")
         }
 
-        const addAbsen = await db.absensi.create({
-            data : data
-        })
+        await db.$transaction(async (tx) => {
+            console.log("ahy");
 
-        return res.status(200).json({
-            msg : "success",
-            data : addAbsen
+            console.log(data);
+            
+            const mapping = {
+                id : data.id,
+                id_anggota : data.id_anggota,
+                dateTime : data.dateTime,
+                keterangan : data.keterangan
+            }
+
+            const addAbsen = await tx.absensi.create({
+                data : mapping
+            })
+
+            if (data.alasan) {
+                const allowAlasan = ["I","C"]
+                if (!allowAlasan.includes(data.keterangan)) {
+                    throw new responseError(400,"alasan absen hanya bisa untuk izin dan cuti")
+                }
+                
+                data.alasan.id = generateId()
+                data.alasan.id_absen = addAbsen.id
+                const addAlasanAbsen = await tx.alasanAbsensi.create({
+                    data : data.alasan
+                })
+                return res.status(200).json({
+                    msg : "success",
+                    data : {
+                        ...addAbsen,
+                        alasan : addAlasanAbsen
+                    }
+                })
+            }else {
+                return res.status(200).json({
+                    msg : "success",
+                    data : {
+                        ...addAbsen,
+                        alasan : null
+                    }
+                })
+            }
         })
     } catch (error) {
         next(error)
@@ -595,9 +636,22 @@ const updateAbsen = async (req,res,next) => {
             },
             data : data
         })
+
+        let updateAlasan = null
+        if (data.alasan) {
+            updateAlasan = await db.alasanAbsensi.update({
+                where : {
+                    id_absen : id
+                },
+                data : data.alasan
+            })
+        }
         return res.status(200).json({
             msg : "success",
-            data : updateAbsen
+            data : {
+                ...updateAbsen,
+                alasan : updateAlasan
+            }
         })      
     } catch (error) {
         next(error)
@@ -676,6 +730,7 @@ const getAllAbsenToday = async (req,res,next) => {
                 id_anggota : true,
                 dateTime : true,
                 keterangan : true,
+                alasan : true,
                 anggota : {
                     select : {
                         id : true,
@@ -711,6 +766,7 @@ const findAbsenById = async (req,res,next) => {
                 id_anggota : true,
                 dateTime : true,
                 keterangan : true,
+                alasan : true,
                 anggota : {
                     select : {
                         id : true,
@@ -762,6 +818,101 @@ const convertPdfAbsen = async (req,res,next) => {
         next(error)
     }
 }
+
+const backUpAbsen = async (req,res,next) => {
+    try {
+        const file = req.files && req.files.file
+
+        if (!file) {
+            throw new responseError(400,"file tidak ditemukan")
+        }
+
+        if(file.mimetype !== "application/pdf") {
+            throw new responseError(400,"file harus pdf")
+        }
+
+        console.log("rte");
+        
+        return file.mv(`./public/backup/${file.name}`,async (err) => {
+            if (err) {
+                return res.status(500).json({
+                    msg : err
+                }) 
+            }
+            
+            const data = await readPdf(`./public/backup/${file.name}`)
+    
+            return res.status(200).json({
+                msg : "success",
+                data : data
+            })
+        })
+
+    } catch (error) {   
+        next(error)
+    }
+}
+
+const restoreAbsen = async (req,res,next) => {
+    try {
+        const file = req.files && req.files.file
+
+        if (!file) {
+            throw new responseError(400,"file tidak ditemukan")
+        }
+
+        if(file.mimetype !== "application/pdf") {
+            throw new responseError(400,"file harus pdf")
+        }
+
+        return file.mv(`./public/backup/${file.name}`,async (err) => {
+            if (err) {
+                return res.status(500).json({
+                    msg : err
+                })
+            }
+
+            const data = await readPdf(`./public/backup/${file.name}`)
+    
+            const dataForDb = []
+    
+            for (let i = 0; i < data.length; i++) {
+                const findAnggota = await db.anggota.findFirst({
+                    where : {
+                        nirp : data[i].NRP
+                    }
+                })
+    
+                if (findAnggota) {
+                    if(!keteranganAbsenList.includes(data[i].Keterangan)) {
+                        return res.status(500).json({
+                            msg : "Keterangan tidak ditemukan"
+                        })
+                    }
+                    dataForDb.push({
+                        id :  generateId(),
+                        id_anggota : findAnggota.id,
+                        dateTime : data[i].Tanggal,
+                        keterangan : data[i].Keterangan
+                    })
+                }
+            }
+    
+            await db.absensi.createMany({
+                data : dataForDb
+            })
+    
+            return res.status(200).json({
+                msg : "success"
+            })
+        })
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+
 export default {
     findAdmin,
     // admin satker
@@ -787,5 +938,7 @@ export default {
     searchAbsen,
     getAllAbsenToday,
     findAbsenById,
-    convertPdfAbsen
+    convertPdfAbsen,
+    backUpAbsen,
+    restoreAbsen
 }

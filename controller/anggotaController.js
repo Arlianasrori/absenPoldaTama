@@ -3,6 +3,7 @@ import { validate } from "../validation/validate.js";
 import responseError from "../error/responseError.js";
 import absenValidation from "../validation/absenValidation.js";
 import { format } from 'date-fns';
+import { generateId } from "../utils/generateId.js";
 
 const addAbsen = async (req,res,next) => {
     try {
@@ -10,18 +11,52 @@ const addAbsen = async (req,res,next) => {
 
         let data = req.body
         data = await validate(absenValidation.addAbsen,data)
+        data.id = generateId()
         data.id_anggota = id_anggota
         data.dateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
         console.log(data);
 
-        const addAbsen = await db.absensi.create({
-            data : data
+        await db.$transaction(async (tx) => {
+            const mapping = {
+                id : data.id,
+                id_anggota : data.id_anggota,
+                dateTime : data.dateTime,
+                keterangan : data.keterangan
+            }
+            
+            const addAbsen = await tx.absensi.create({
+                data : mapping
+            })
+
+            if (data.alasan) {
+                const allowAlasan = ["I","C"]
+                if (!allowAlasan.includes(data.keterangan)) {
+                    throw new responseError(400,"alasan absen hanya bisa untuk izin dan cuti")
+                }
+                
+                data.alasan.id = generateId()
+                data.alasan.id_absen = addAbsen.id
+                const addAlasanAbsen = await tx.alasanAbsensi.create({
+                    data : data.alasan
+                })
+                return res.status(200).json({
+                    msg : "success",
+                    data : {
+                        ...addAbsen,
+                        alasan : addAlasanAbsen
+                    }
+                })
+            }else {
+                return res.status(200).json({
+                    msg : "success",
+                    data : {
+                        ...addAbsen,
+                        alasan : null
+                    }
+                })
+            }
         })
 
-        return res.status(200).json({
-            msg : "success",
-            data : addAbsen
-        })
     } catch (error) {
         next(error)
     }
@@ -59,6 +94,7 @@ const getAllAbsenToday = async (req,res,next) => {
                 id_anggota : true,
                 dateTime : true,
                 keterangan : true,
+                alasan : true,
                 anggota : {
                     select : {
                         id : true,
@@ -151,6 +187,7 @@ const searchAbsen = async (req,res,next) => {
                 id_anggota : true,
                 dateTime : true,
                 keterangan : true,
+                alasan : true,
                 anggota : {
                     select : {
                         id : true,

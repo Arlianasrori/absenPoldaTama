@@ -1,0 +1,1 @@
+export const keteranganAbsenList = ["H","DIK","I","C","S","TH","TGW","TK","TAH"]

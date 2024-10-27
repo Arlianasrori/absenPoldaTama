@@ -5,6 +5,8 @@ import { anggotaRouter } from "./routes/anggotaRouter.js"
 import { adminRouter } from "./routes/adminRouter.js"
 import { adminSatkerRouter } from "./routes/adminSatkerRouter.js"
 import cookieParser from "cookie-parser"
+import fileUpload from "express-fileupload"
+
 import env from "dotenv"
 import cors from "cors"
 import { backup_absen } from "./cron_job/backup_absen.js"
@@ -26,6 +28,7 @@ app.use(
 
 backup_absen()
 
+app.use(fileUpload())
 app.use(authRouter)
 app.use("/anggota",anggotaRouter)
 app.use("/admin",adminRouter)

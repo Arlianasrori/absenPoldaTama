@@ -26,11 +26,6 @@ model anggota {
   backup_absen backup_absen[]
 }
 
-enum ApelAbsen {
-  pagi
-  siang
-}
-
 enum KeteranganAbsen {
   H
   DIK
@@ -38,7 +33,7 @@ enum KeteranganAbsen {
   C
   S
   TH
-  TGw
+  TGW
   TK
   TAH
 }
@@ -48,9 +43,17 @@ model absensi {
   id_anggota Int
   dateTime String
   keterangan KeteranganAbsen
-  apel ApelAbsen
-
   anggota anggota @relation(fields: [id_anggota],references: [id])
+  alasan alasanAbsensi?
+}
+
+model alasanAbsensi {
+  id Int @id @default(autoincrement())
+  id_absen Int @unique
+  alasan String
+  file String?
+
+  absen absensi @relation(fields: [id_absen],references: [id])
 }
 
 model backup_absen {
@@ -58,9 +61,18 @@ model backup_absen {
   id_anggota Int
   dateTime String
   keterangan KeteranganAbsen
-  apel ApelAbsen
 
   anggota anggota @relation(fields: [id_anggota],references: [id])
+  alasan alasanAbsensiBackup?
+}
+
+model alasanAbsensiBackup {
+  id Int @id @default(autoincrement())
+  id_absen Int @unique
+  alasan String
+  file String?
+
+  backup_absen backup_absen @relation(fields: [id_absen],references: [id])
 }
 
 model admin {

@@ -4,8 +4,7 @@ import absenValidation from "../validation/absenValidation.js";
 
 export const searchAbsen = async (query,satker) => {
     query = await validate(absenValidation.searchAbsenValidation,query)
-    console.log(query)
-
+    
     const whereQuery = {
         AND : [
             {
@@ -54,11 +53,6 @@ export const searchAbsen = async (query,satker) => {
                         mode : "insensitive"
                     }
                 }
-            },
-            {
-                apel : {
-                    equals : query.apel
-                }
             }
         ]
     }
@@ -73,7 +67,7 @@ export const searchAbsen = async (query,satker) => {
             id_anggota : true,
             dateTime : true,
             keterangan : true,
-            apel : true,
+            alasan : true,
             anggota : {
                 select : {
                     id : true,
@@ -86,9 +80,6 @@ export const searchAbsen = async (query,satker) => {
             }
         }
     })
-
-    console.log(findAbsen);
-    
 
     return {
         absen : findAbsen

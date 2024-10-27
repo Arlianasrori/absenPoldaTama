@@ -21,72 +21,37 @@ let adaAnggota = 0
 //     const row = data[i];
 //     console.log(nrpanggota);
     
+import pdfTableExtractor from 'pdf-table-extractor';
 
-//     if (typeof row == "object") {
-//         if (!nrpanggota.includes(row.NRP)) {
-//             const dataMapp = {
-//                 nama : row.Nama,
-//                 nirp : row.NRP,
-//                 pangkat : row.Pangkat,
-//                 jabatan : row.Jabatan,
-//                 satker : row.Satker,
-//                 password : row.Nama
-//             }
+async function konversiPDFkeCSV(jalurPDF) {
+  try {
+    const result = await new Promise((resolve, reject) => {
+      pdfTableExtractor(jalurPDF, resolve, reject);
+    });
 
-//             console.log(dataMapp.nirp);
-            
-//             await db.anggota.create({data : dataMapp})
-//             nrpanggota.push(row.NRP)
-// }
-//     }
-// }
+    // console.log(result.pageTables[0].tables);
+    const dataRow = []
 
-// console.log(dataAnggota);
-// await db.anggota.createMany({data : dataAnggota})
-
-    
-
-// console.log(adaAnggota);
-for (let i = 0; i < data.length; i++) {
-    const row = data[i];
-
-    if (typeof row == "object") {
-    const findIdAnggota = await db.anggota.findUnique({
-        where : {
-            nirp : row.NRP
-        }
-    })
-
-    const keteranganMapp = {
-        HADIR : "H",
-        IJIN : "I",
-        TUGAS : "C",
-        SAKIT : "S",
-        DIK : "DIK",
-        CUTI : "C",
-        TAH : "TAH",
-        "TK" : "TK",
+    for(let i = 3; i < result.pageTables[0].tables.length; i++) {
+      // console.log(result.pageTables[0].tables[i]);
+      const dataMapping = {
+        NRP: result.pageTables[0].tables[i][1],
+        Nama: result.pageTables[0].tables[i][2],
+        Pangkat: result.pageTables[0].tables[i][3],
+        Jabatan: result.pageTables[0].tables[i][4],
+        Tanggal: result.pageTables[0].tables[i][5],
+        Satker: result.pageTables[0].tables[i][6],
+        Keterangan: result.pageTables[0].tables[i][7],
+      }
+      dataRow.push(dataMapping)
     }
 
-    console.log(row.Keterangan);
-    
-    if (findIdAnggota) {
-        adaAnggota += 1
-        const dataMapping = {
-            id_anggota : findIdAnggota.id,
-            dateTime : row.Tanggal,
-            keterangan : row.Keterangan ? keteranganMapp[row.Keterangan] : "H", 
-            apel : row.Apel.toLowerCase()
-        }
-        console.log(dataMapping);
-        
-        await db.absensi.create({
-            data : dataMapping
-        })
-    }
-    }
-    console.log(i);
-    
+    console.log(dataRow);
+  } catch (error) {
+    console.error('Terjadi kesalahan:', error);
+  }
 }
 
-// console.log(adaAnggota);
+const jalurPDF = '/home/lyntri/project/absen-polda/public/laporan/laporanAbsen(2024-09-11 - 2024-09-25).pdf';
+
+konversiPDFkeCSV(jalurPDF);
