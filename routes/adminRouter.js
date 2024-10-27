@@ -8,6 +8,14 @@ adminRouter.use(adminMiddleware)
 
 adminRouter.get("/findAdmin",adminController.findAdmin)
 
+// admin satker
+adminRouter.post("/admin-satker",adminController.addAdminSatker)
+adminRouter.get("/admin-satker",adminController.getAllAdminSatker)
+adminRouter.get("/admin-satker/:id",adminController.getAdminSatkerById)
+adminRouter.put("/admin-satker/:id",adminController.updateAdminSatker)
+adminRouter.delete("/admin-satker/:id",adminController.deleteAdminSatker)
+adminRouter.get("/admin-satker/get/search",adminController.searchAdminSatker)
+
 // anggota
 adminRouter.post("/anggota",adminController.addAnggota)
 adminRouter.get("/anggota/get/search",adminController.searchAnggota)

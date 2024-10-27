@@ -16,13 +16,14 @@ datasource db {
 model anggota {
   id Int @id @default(autoincrement())
   nama String
-  nirp String @db.VarChar(12) @unique
+  nirp String @db.VarChar(30) @unique
   pangkat String
   jabatan String
   satker String
   password String
 
   absensi absensi[]
+  backup_absen backup_absen[]
 }
 
 enum ApelAbsen {
@@ -30,11 +31,33 @@ enum ApelAbsen {
   siang
 }
 
+enum KeteranganAbsen {
+  H
+  DIK
+  I
+  C
+  S
+  TH
+  TGw
+  TK
+  TAH
+}
+
 model absensi {
   id Int @id @default(autoincrement())
   id_anggota Int
   dateTime String
-  keterangan String
+  keterangan KeteranganAbsen
+  apel ApelAbsen
+
+  anggota anggota @relation(fields: [id_anggota],references: [id])
+}
+
+model backup_absen {
+  id Int @id @default(autoincrement())
+  id_anggota Int
+  dateTime String
+  keterangan KeteranganAbsen
   apel ApelAbsen
 
   anggota anggota @relation(fields: [id_anggota],references: [id])
@@ -44,5 +67,13 @@ model admin {
   id Int @id @default(autoincrement())
   nirp String @db.VarChar(12) @unique
   nama String
+  password String
+}
+
+model admin_satker {
+  id Int @id @default(autoincrement())
+  nirp String @db.VarChar(12) @unique
+  nama String
+  satker String
   password String
 }

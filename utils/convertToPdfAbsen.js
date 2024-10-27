@@ -2,7 +2,6 @@ import puppeteer from 'puppeteer';
 import * as ejs from 'ejs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import randomString from "random-string"
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -13,19 +12,12 @@ export async function generatePDFAbsen(data,islaporan) {
     const page = await browser.newPage();
 
     let templatePath = ""
+    const fileName = `${data.start ? data.start : "-"} - ${data.end ? data.end : "-"}`
     
     if(islaporan){
-      templatePath = join(__dirname, `../public/laporan/laporanAbsen(${randomString({
-        length : 4,
-        numbers : true,
-        letters : false
-      })})-${data.start ? data.start : "-"}-${data.end ? data.end : "-"}.pdf`);
+      templatePath = join(__dirname, `../public/laporan/laporan(${fileName}).pdf`);
     }else{
-      templatePath = join(__dirname, `../public/rekap/rekapAbsen(${randomString({
-        length : 4,
-        numbers : true,
-        letters : false
-      })})-${data.start ? data.start : "-"}-${data.end ? data.end : "-"}.pdf`);
+      templatePath = join(__dirname, `../public/rekap/rekapAbsen(${fileName}).pdf`);
     }
     
     const path = join(__dirname, "../public/template-absen-pdf.ejs");
@@ -53,7 +45,11 @@ export async function generatePDFAbsen(data,islaporan) {
     await browser.close();
     
     console.log('PDF berhasil dibuat!');
-    return pdfBuffer;
+    if(islaporan){
+      return `http://localhost:3000/laporan/laporan(${fileName}).pdf`;
+    }else{
+      return `http://localhost:3000/laporan/rekap(${fileName}).pdf`;
+    }
   } catch (error) {
     console.error('Terjadi kesalahan:', error);
     throw error;

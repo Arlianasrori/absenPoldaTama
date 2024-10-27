@@ -7,7 +7,6 @@ export const anggotaRouter = express.Router()
 anggotaRouter.use(anggotaMiddleware)
 anggotaRouter.get("/findAnggota",anggotaController.findAnggota)
 
-
 // absen
 anggotaRouter.post("/absen",anggotaController.addAbsen)
 anggotaRouter.get("/absen",anggotaController.getAllAbsenToday)

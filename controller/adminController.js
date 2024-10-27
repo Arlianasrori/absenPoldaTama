@@ -18,7 +18,8 @@ const findAdmin = async (req,res,next) => {
             select : {
                 id : true,
                 nama : true,
-                nirp : true
+                nirp : true,
+                satker : true
             }
         })
 
@@ -32,6 +33,242 @@ const findAdmin = async (req,res,next) => {
     }
 }
 
+// admin satker
+const addAdminSatker = async (req,res,next) => {
+    try {
+        let data = req.body
+        data = await validate(adminvalidation.addAdminSatker,data)
+
+        const findAdminSatkerBynirp = await db.admin_satker.findFirst({
+            where : {
+                nirp : data.nirp
+            }
+        })
+
+        if (findAdminSatkerBynirp) {
+            throw new responseError(400,"nirp telah ditambahkan")
+        }
+
+        const addAdminSatker = await db.admin_satker.create({
+            data : data
+        })
+        
+        return res.status(200).json({
+            msg : "success",
+            data : addAdminSatker
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+const updateAdminSatker = async (req,res,next) => {
+    try {
+        const id = parseInt(req.params.id)
+        let data = req.body
+        data = await validate(adminvalidation.updateAdminSatker,data)
+
+        const findAdminSatkerById = await db.admin_satker.findUnique({
+            where : {
+                id : id
+            }
+        })
+
+        if (!findAdminSatkerById) {
+            throw new responseError(404,"admin satker tidak ditemukan")
+        }
+
+        if (data.nirp) {
+            const findAdminSatkerBynirp = await db.admin_satker.findFirst({
+                where : {
+                    AND : [
+                        {
+                            nirp : {
+                                equals : data.nirp
+                            }
+                        },
+                        {
+                            nirp : {
+                                not : findAdminSatkerById.nirp
+                            }
+                        }
+                    ]
+                }
+            })
+
+            if (findAdminSatkerBynirp) {
+                throw new responseError(400,"nirp sudah digunakan")
+            }
+        }
+
+        const updateAdminSatker = await db.admin_satker.update({
+            where : {
+                id : id
+            },
+            data : data,
+            select : {
+                id : true,
+                nirp : true,
+                nama : true,
+                satker : true
+            }
+        })
+
+        return res.status(200).json({
+            msg : "success",
+            data : updateAdminSatker
+        })
+        
+        
+    } catch (error) {
+        next(error)
+    }
+}
+
+const deleteAdminSatker = async (req,res,next) => {
+    try {
+        const id = parseInt(req.params.id)
+
+        const findAdminSatkerById = await db.admin_satker.findUnique({
+            where : {
+                id : id
+            }
+        })
+
+        if (!findAdminSatkerById) {
+            throw new responseError(404,"admin satker tidak ditemukan")
+        }
+
+        const deleteAdminSatker = await db.admin_satker.delete({
+            where : {
+                id : id
+            },
+            select : {
+                id : true,
+                nirp : true,
+                nama : true,
+                satker : true
+            }
+        })
+
+        return res.status(200).json({
+            msg : "success",
+            data : deleteAdminSatker
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getAllAdminSatker = async (req,res,next) => {
+    try {
+        const allAdminSatker = await db.admin_satker.findMany({     
+            select : {
+                id : true,
+                nirp : true,
+                nama : true,
+                satker : true
+            }      
+        })
+
+        return res.status(200).json({
+            msg : "success",
+            data : allAdminSatker
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+const searchAdminSatker = async (req,res,next) => {
+    try {
+        let query = await validate(adminvalidation.searchAdminSatker,req.query)
+
+        const skip = (query.page - 1) * query.limit
+
+        const whereQuery = {
+            AND : [
+                {
+                    nirp : {
+                        equals : query.nirp,
+                        mode : "insensitive"
+                    }
+                },
+                {
+                    nama : {
+                        contains : query.nama,
+                        mode : "insensitive"
+                    }
+                },
+                {
+                    satker : {
+                        equals : query.satker,
+                        mode : "insensitive"
+                    }
+                }
+            ]
+        }
+
+        const findAdminSatker = await db.admin_satker.findMany({
+            where : whereQuery,
+            skip : skip,
+            take : query.limit,
+            select : {
+                id : true,
+                nama : true,
+                nirp : true,
+                satker : true
+            }
+        })
+
+        const totalData = await db.admin_satker.count({
+            where : whereQuery
+        })
+        console.log(query.limit);
+        const totalPage = Math.ceil(totalData / query.limit)
+
+        return res.status(200).json({
+            msg : "success",
+            data : {
+                adminSatker : findAdminSatker,
+                totalData : totalData,
+                totalPage : totalPage
+            }
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getAdminSatkerById = async (req,res,next) => {
+    try {
+        const id = parseInt(req.params.id)
+
+        const findAdminSatkerById = await db.admin_satker.findUnique({
+            where : {
+                id : id
+            },
+            select : {
+                id : true,
+                nirp : true,
+                nama : true,
+                satker : true
+            }
+        })
+
+        if (!findAdminSatkerById) {
+            throw new responseError(404,"admin satker tidak ditemukan")
+        }
+
+        return res.status(200).json({
+            msg : "success",
+            data : findAdminSatkerById
+        })
+        
+    } catch (error) {
+        next(error)
+    }
+}
 
 // anggota
 const addAnggota = async (req,res,next) => {
@@ -50,7 +287,15 @@ const addAnggota = async (req,res,next) => {
         }
 
         const addAnggota = await db.anggota.create({
-            data : data
+            data : data,
+            select : {
+                id : true,
+                nama : true,
+                nirp : true,
+                pangkat : true,
+                jabatan : true,
+                satker : true
+            }
         }) 
 
         res.status(200).json({
@@ -67,6 +312,14 @@ const addAnggota = async (req,res,next) => {
 const getAllAnggota = async (req,res,next) => {
     try {
         const allAnggota = await db.anggota.findMany({
+            select : {
+                id : true,
+                nama : true,
+                nirp : true,
+                pangkat : true,
+                jabatan : true,
+                satker : true
+            }
         })
 
         return res.status(200).json({
@@ -86,6 +339,14 @@ const findAnggotaById = async (req,res,next) => {
         const findAnggotaById = await db.anggota.findUnique({
             where : {
                 id : id
+            },
+            select : {
+                id : true,
+                nama : true,
+                nirp : true,
+                pangkat : true,
+                jabatan : true,
+                satker : true
             }
         })
 
@@ -151,7 +412,15 @@ const updateAnggota = async (req,res,next) => {
             where : {
                 id : id
             },
-            data : data
+            data : data,
+            select : {
+                id : true,
+                nama : true,
+                nirp : true,
+                pangkat : true,
+                jabatan : true,
+                satker : true
+            }
         })
         return res.status(200).json({
             msg : "success",
@@ -180,6 +449,14 @@ const deleteAnggota = async (req,res,next) => {
             {
                 where : {
                     id : id
+                },
+                select : {
+                    id : true,
+                    nama : true,
+                    nirp : true,
+                    pangkat : true,
+                    jabatan : true,
+                    satker : true
                 }
             }
         )
@@ -200,41 +477,43 @@ const searchAnggota = async (req,res,next) => {
         const limit = query.limit ? parseInt(query.limit) : 10
         const skip = (page - 1) * limit
 
-        const findAnggota = await db.anggota.findMany({
-            where : {
-                AND : [
-                    {
-                        nirp : {
-                            equals : query.nirp,
-                            mode : "insensitive"
-                        }
-                    },
-                    {
-                        nama : {
-                            contains : query.nama,
-                            mode : "insensitive"
-                        }
-                    },
-                    {
-                        pangkat : {
-                            equals : query.pangkat,
-                            mode : "insensitive"
-                        }
-                    },
-                    {
-                        jabatan : {
-                            equals : query.jabatan,
-                            mode : "insensitive"
-                        }
-                    },
-                    {
-                        satker : {
-                            equals : query.satker,
-                            mode : "insensitive"
-                        }
+        const whereQuery = {
+            AND : [
+                {
+                    nirp : {
+                        equals : query.nirp,
+                        mode : "insensitive"
                     }
-                ]
-            },
+                },
+                {
+                    nama : {
+                        contains : query.nama,
+                        mode : "insensitive"
+                    }
+                },
+                {
+                    pangkat : {
+                        equals : query.pangkat,
+                        mode : "insensitive"
+                    }
+                },
+                {
+                    jabatan : {
+                        equals : query.jabatan,
+                        mode : "insensitive"
+                    }
+                },
+                {
+                    satker : {
+                        equals : query.satker,
+                        mode : "insensitive"
+                    }
+                }
+            ]
+        }
+
+        const findAnggota = await db.anggota.findMany({
+            where : whereQuery,
             skip : skip,
             take : limit,
             select : {
@@ -248,40 +527,7 @@ const searchAnggota = async (req,res,next) => {
         })
 
         const totalData = await db.anggota.count({
-            where : {
-                AND : [
-                    {
-                        nirp : {
-                            equals : query.nirp,
-                            mode : "insensitive"
-                        }
-                    },
-                    {
-                        nama : {
-                            contains : query.nama,
-                            mode : "insensitive"
-                        }
-                    },
-                    {
-                        pangkat : {
-                            equals : query.pangkat,
-                            mode : "insensitive"
-                        }
-                    },
-                    {
-                        jabatan : {
-                            equals : query.jabatan,
-                            mode : "insensitive"
-                        }
-                    },
-                    {
-                        satker : {
-                            equals : query.satker,
-                            mode : "insensitive"
-                        }
-                    }
-                ]
-            }
+            where : whereQuery
         })
 
         const totalPage = Math.ceil(totalData / limit)
@@ -290,7 +536,7 @@ const searchAnggota = async (req,res,next) => {
             msg : "success",
             data : {
                 anggota : findAnggota,
-                totalData : totalData,
+                totalData : findAnggota.length,
                 totalPage : totalPage
             }
         })
@@ -504,10 +750,13 @@ const convertPdfAbsen = async (req,res,next) => {
             data : findAbsen.absen
         }
 
-        await generatePDFAbsen(payloadPdf,query.isLaporan)
+        const pdfUrl = await generatePDFAbsen(payloadPdf,query.isLaporan)
 
         return res.status(200).json({
-            msg : "success"
+            msg : "success",
+            data : {
+                pdfUrl : pdfUrl
+            }
         })
     } catch (error) {
         next(error)
@@ -515,6 +764,14 @@ const convertPdfAbsen = async (req,res,next) => {
 }
 export default {
     findAdmin,
+    // admin satker
+    addAdminSatker,
+    getAllAdminSatker,
+    getAdminSatkerById,
+    updateAdminSatker,
+    deleteAdminSatker,
+    searchAdminSatker,
+
 
     // anggota
     addAnggota,
