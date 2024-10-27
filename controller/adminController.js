@@ -5,7 +5,7 @@ import responseError from "../error/responseError.js";
 import { format } from 'date-fns';
 import { searchAbsen as searchAbsenUtils } from "../utils/searchAbsen.js";
 import { generatePDFAbsen } from "../utils/convertToPdfAbsen.js";
-
+import { readPdf } from "../utils/readPdf.js";
 
 const findAdmin = async (req,res,next) => {
     try {
@@ -777,6 +777,93 @@ const convertPdfAbsen = async (req,res,next) => {
         next(error)
     }
 }
+
+const backUpAbsen = async (req,res,next) => {
+    try {
+        const file = req.files && req.files.file
+
+        if (!file) {
+            throw new responseError(400,"file tidak ditemukan")
+        }
+
+        if(file.mimetype !== "application/pdf") {
+            throw new responseError(400,"file harus pdf")
+        }
+
+        file.mv(`./public/backup/${file.name}`)
+
+        const data = await readPdf(`./public/backup/${file.name}`)
+
+        return res.status(200).json({
+            msg : "success",
+            data : data
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+const restoreAbsen = async (req,res,next) => {
+    try {
+        const file = req.files && req.files.file
+
+        if (!file) {
+            throw new responseError(400,"file tidak ditemukan")
+        }
+
+        if(file.mimetype !== "application/pdf") {
+            throw new responseError(400,"file harus pdf")
+        }
+
+        file.mv(`./public/backup/${file.name}`)
+
+        const data = await readPdf(`./public/backup/${file.name}`)
+
+        const dataForDb = []
+
+        const lastAbsen = await db.absensi.findFirst({
+            orderBy : {
+                id : "desc"
+            }
+        })
+
+        let idAbsenMax = lastAbsen ? lastAbsen.id : 0
+
+        console.log(idAbsenMax);
+
+        for (let i = 0; i < data.length; i++) {
+            const findAnggota = await db.anggota.findFirst({
+                where : {
+                    nirp : data[i].NRP
+                }
+            })
+
+            if (findAnggota) {
+                console.log(idAbsenMax + 1);
+                dataForDb.push({
+                    id : idAbsenMax + 1,
+                    id_anggota : findAnggota.id,
+                    dateTime : data[i].Tanggal,
+                    keterangan : data[i].Keterangan
+                })
+
+                idAbsenMax += 1
+            }
+        }
+
+        await db.absensi.createMany({
+            data : dataForDb
+        })
+
+        return res.status(200).json({
+            msg : "success"
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+
 export default {
     findAdmin,
 
@@ -803,5 +890,7 @@ export default {
     searchAbsen,
     getAllAbsenToday,
     findAbsenById,
-    convertPdfAbsen
+    convertPdfAbsen,
+    backUpAbsen,
+    restoreAbsen
 }

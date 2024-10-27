@@ -5,6 +5,8 @@ import { anggotaRouter } from "./routes/anggotaRouter.js"
 import { adminRouter } from "./routes/adminRouter.js"
 import { adminSatkerRouter } from "./routes/adminSatkerRouter.js"
 import cookieParser from "cookie-parser"
+import fileUpload from "express-fileupload"
+
 import env from "dotenv"
 env.config()
 
@@ -12,6 +14,7 @@ const app = express()
 
 app.use(express.json())
 app.use(cookieParser()) 
+app.use(fileUpload())
 app.use(authRouter)
 app.use("/anggota",anggotaRouter)
 app.use("/admin",adminRouter)
