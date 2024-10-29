@@ -30,7 +30,17 @@ export async function generatePDFAbsen(data,islaporan) {
       });
     };
 
-    const html = await renderFile(path, data);
+    const detail_count = {}
+
+    for(let i = 0; i < data.data.length; i++){
+      if (data.data[i].keterangan in detail_count){
+        detail_count[data.data[i].keterangan] += 1
+      }else{
+        detail_count[data.data[i].keterangan] = 1
+      }
+    }
+    
+    const html = await renderFile(path, {...data, detail_count});
     
     await page.setContent(html, { waitUntil: 'networkidle0' });
     
