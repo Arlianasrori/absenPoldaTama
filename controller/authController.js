@@ -13,7 +13,7 @@ const login = async (req,res,next) => {
         // admin
         const findAdmin = await db.admin.findFirst({
             where : {
-                nirp : data.nirp
+                nirp : data.textBody
             }
         })
 
@@ -39,7 +39,7 @@ const login = async (req,res,next) => {
         // anggota
         const findAnggota = await db.anggota.findFirst({
             where : {
-                nirp : data.nirp
+                nirp : data.textBody
             }
         })
 
@@ -65,7 +65,7 @@ const login = async (req,res,next) => {
         // satker
         const findAdminSatker = await db.admin_satker.findFirst({
             where : {
-                nirp : data.nirp
+                nirp : data.textBody
             }
         })
 

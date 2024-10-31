@@ -27,3 +27,6 @@ adminSatkerRouter.get("/absen/:id",adminSatkerController.findAbsenById)
 adminSatkerRouter.get("/absen/convert/pdf",adminSatkerController.convertPdfAbsen)
 adminSatkerRouter.post("/absen/backup/pdf",adminSatkerController.backUpAbsen)
 adminSatkerRouter.post("/absen/restore/pdf",adminSatkerController.restoreAbsen)
+
+// detail istansi
+adminSatkerRouter.get("/detail/instansi",adminSatkerController.getDetailIstansi)

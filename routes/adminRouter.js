@@ -34,3 +34,6 @@ adminRouter.get("/absen/:id",adminController.findAbsenById)
 adminRouter.get("/absen/convert/pdf",adminController.convertPdfAbsen)
 adminRouter.post("/absen/backup/pdf",adminController.backUpAbsen)
 adminRouter.post("/absen/restore/pdf",adminController.restoreAbsen)
+
+// detail istansi
+adminRouter.get("/detail/instansi",adminController.getDetailIstansi)

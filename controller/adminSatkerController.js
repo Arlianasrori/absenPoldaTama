@@ -618,6 +618,23 @@ const restoreAbsen = async (req,res,next) => {
     }
 }
 
+const getDetailIstansi = async (req,res,next) => {
+    try {
+    const countInstansi = await db.$queryRaw`
+    SELECT 
+      (SELECT COUNT(*)::int FROM anggota) AS jumlah_anggota,
+      (SELECT COUNT(*)::int FROM absensi) AS jumlah_absen
+    `
+
+    return res.status(200).json({
+        msg : "success",
+        data : countInstansi
+    })
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     findAdmin,
 
@@ -637,5 +654,8 @@ export default {
     findAbsenById,
     convertPdfAbsen,
     backUpAbsen,
-    restoreAbsen
+    restoreAbsen,
+
+    // detail istansi
+    getDetailIstansi
 }
