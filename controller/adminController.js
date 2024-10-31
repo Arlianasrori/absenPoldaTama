@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { searchAbsen as searchAbsenUtils } from "../utils/searchAbsen.js";
 import { generatePDFAbsen } from "../utils/convertToPdfAbsen.js";
 import { readPdf } from "../utils/readPdf.js";
+import randomString from "randomstring";
 
 const findAdmin = async (req,res,next) => {
     try {
@@ -526,60 +527,97 @@ const searchAnggota = async (req,res,next) => {
 }
 
 // absen
-const addAbsen = async (req,res,next) => {
+const addAbsen = async (req, res, next) => {
     try {
-        let data = await validate(adminvalidation.addAbsenvalidation,req.body)
+        let data = await validate(adminvalidation.addAbsenvalidation, req.body);
 
         let findAnggotaById = await db.anggota.findUnique({
-            where : {
-                id : data.id_anggota
+            where: {
+                id: data.id_anggota
             }
-        })
+        });
+
+        const file = req.files && req.files.file;
 
         if (!findAnggotaById) {
-            throw new responseError(404,"anggota tidak ditemukan")
+            throw new responseError(404, "anggota tidak ditemukan");
         }
 
-        db.$transaction(async (tx) => {
-            const addAbsen = await tx.absensi.create({
-                data : data
-            })
+            const addAbsen = await db.absensi.create({
+                data: {
+                    id_anggota: data.id_anggota,
+                    dateTime: data.dateTime,
+                    keterangan: data.keterangan
+                }
+            });
 
             if (data.alasan) {
-                const allowAlasan = ["I","C"]
+                const allowAlasan = ["I", "C"];
                 if (!allowAlasan.includes(data.keterangan)) {
-                    throw new responseError(400,"alasan absen hanya bisa untuk izin dan cuti")
+                    return res.status(400).json({
+                        msg: "alasan absen hanya bisa untuk izin dan cuti"
+                    });
                 }
-                
-                const addAlasanAbsen = await tx.alasanAbsensi.create({
-                    data : data.alasan
-                })
+
+                if (file) {
+                    const fileName = `${randomString.generate({ length: 6, charset: "numeric" })}-${file.name.split(" ").slice(-1)[0]}`;
+                    file.mv(`./public/dokumen_absen/${fileName}`, async (err) => {
+                        if (err) {
+                            return res.status(500).json({
+                                msg: err.message
+                            });
+                        }
+
+                        const addAlasanAbsen = await db.alasanAbsensi.create({
+                            data: {
+                                alasan: data.alasan,
+                                id_absen: addAbsen.id,
+                                file: `http://localhost:3000/dokumen_absen/${fileName}`
+                            }
+                        });
+
+                        return res.status(200).json({
+                            msg: "success",
+                            data: {
+                                ...addAbsen,
+                                alasan: addAlasanAbsen
+                            }
+                        });
+                    });
+                } else {
+                    const addAlasanAbsen = await db.alasanAbsensi.create({
+                        data: {
+                            alasan: data.alasan,
+                            id_absen: addAbsen.id
+                        }
+                    });
+
+                    return res.status(200).json({
+                        msg: "success",
+                        data: {
+                            ...addAbsen,
+                            alasan: addAlasanAbsen
+                        }
+                    });
+                }
+            } else {
                 return res.status(200).json({
-                    msg : "success",
-                    data : {
+                    msg: "success",
+                    data: {
                         ...addAbsen,
-                        alasan : addAlasanAbsen
+                        alasan: null
                     }
-                })
-            }else {
-                return res.status(200).json({
-                    msg : "success",
-                    data : {
-                        ...addAbsen,
-                        alasan : null
-                    }
-                })
+                });
             }
-        })
     } catch (error) {
-        next(error)
+        next(error);
     }
-}
+};
 
 const updateAbsen = async (req,res,next) => {
     try {
         const id = parseInt(req.params.id)
-        console.log(id);
+
         let data = await validate(adminvalidation.updateAbsenvalidation,req.body)
 
         let findAbsenById = await db.absensi.findUnique({
@@ -599,20 +637,53 @@ const updateAbsen = async (req,res,next) => {
             data : data
         })
 
-        let updateAlasan = null
-        if (data.alasan) {
-            updateAlasan = await db.alasanAbsensi.update({
+        const file = req.files && req.files.file
+
+        if (data.alasan || file) {
+            const findAlasanAnsen = await db.alasanAbsensi.findUnique({
                 where : {
                     id_absen : id
-                },
-                data : data.alasan
+                }
             })
+
+            if (!findAlasanAnsen) {
+                throw new responseError(404,"alasan absen tidak ditemukan")
+            }
+
+            if (data.alasan) {
+                db.alasanAbsensi.update({
+                    where : {
+                        id_absen : id
+                    },
+                    data : {
+                        alasan : data.alasan
+                    }
+                })
+            }
+            if (file) {
+                const fileName = `${randomString.generate({ length: 6, charset: "numeric" })}-${file.name.split(" ").slice(-1)[0]}`;
+                file.mv(`./public/dokumen_absen/${fileName}`, async (err) => {
+                    if (err) {
+                        return res.status(500).json({
+                            msg: err.message
+                        });
+                    }
+
+                    await db.alasanAbsensi.update({
+                        where : {
+                            id_absen : id
+                        },
+                        data : {
+                            file: `http://localhost:3000/dokumen_absen/${fileName}`
+                        }
+                    });
+                });
+            } 
         }
         return res.status(200).json({
             msg : "success",
             data : {
-                ...updateAbsen,
-                alasan : updateAlasan
+                ...updateAbsen
             }
         })      
     } catch (error) {

@@ -4,13 +4,13 @@ import joi from "joi"
 
 
 
-const alasanAbsenValidation = joi.object({
-    id_absen : joi.number().required(),
-    alasan : joi.string().required()
-})
+// const alasanAbsenValidation = joi.object({
+//     id_absen : joi.number().required(),
+//     alasan : joi.string().required()
+// })
 const addAbsen = joi.object({
     keterangan : joi.valid("H","DIK","I","C","S","TH","TG","TK").required(),
-    alasan : alasanAbsenValidation.optional()
+    alasan : joi.string().optional()
 })
 
 const searchAbsenValidation = joi.object({

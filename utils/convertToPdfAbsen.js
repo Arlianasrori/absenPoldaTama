@@ -39,8 +39,23 @@ export async function generatePDFAbsen(data,islaporan) {
         detail_count[data.data[i].keterangan] = 1
       }
     }
+
+    const listIDSiswa = []
+    let countSiswa = 0
+    let countHadir = 0
+
+    for(let i = 0; i < data.data.length; i++){
+      if (!listIDSiswa.includes(data.data[i].anggota.id)){
+        listIDSiswa.push(data.data[i].anggota.id)
+        countSiswa += 1
+      }
+
+      if (data.data[i].keterangan == "H"){
+        countHadir += 1
+      }
+    }
     
-    const html = await renderFile(path, {...data, detail_count});
+    const html = await renderFile(path, {...data, detail_count, jumlah : data.data.length, countSiswa, countHadir});
     
     await page.setContent(html, { waitUntil: 'networkidle0' });
     

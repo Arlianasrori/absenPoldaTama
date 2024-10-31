@@ -15,16 +15,16 @@ const updateAnggota = joi.object({
     password : joi.string().optional()
 })
 
-const alasanAbsenValidation = joi.object({
-    id_absen : joi.number().required(),
-    alasan : joi.string().required()
-})
+// const alasanAbsenValidation = joi.object({
+//     id_absen : joi.number().required(),
+//     alasan : joi.string().required()
+// })
 
 const addAbsenvalidation = joi.object({
     id_anggota : joi.number().required(),
     dateTime : joi.string().required(),
     keterangan : joi.valid("H","DIK","I","C","S","TH","TG","TK").required(),
-    alasan : alasanAbsenValidation.optional()
+    alasan : joi.string().optional()
 })
 
 const updateAlasanAbsenValidation = joi.object({
