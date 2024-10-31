@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Anggota</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 5px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div style="margin-bottom: 10px;width: 50%;text-align: center;">
+        <h5 style="line-height: 0;">KEPOLISIAN NEGARA REPUBLIK INDONESIA</h1>
+        <h5 style="line-height: 0;">DAERAH NUSA TENGGARA BARAT</h2>
+        <h5 style="line-height: 0;text-decoration: underline;text-underline-offset: 3px;">BIDANG TEKNOLOGI INFORMASI DAN KOMUNIKASI</h3>
+    </div>
+    
+    <div style="text-align: center;margin-top: 30px;">
+        <h5 style="line-height: 0;">ABSENSI PAGI/SIANG ANGGOTA</h4>
+        <h5 style="line-height: 0;text-decoration: underline;text-underline-offset: 3px;">SUBBID TEKINFO BID TIK POLDA NTB</h5>
+    </div>
+    <% if (!start && !end) { %>
+        <p style="font-size: 13px;">TANGGAL: ____________</p>
+    <% } else { %>
+        <p style="font-size: 13px;">TANGGAL: <%= start ? start : "-" %> s/d <%= end ? end : "-" %></p>
+    <% } %>
+    
+    <table>
+        <thead>
+            <tr>
+                <th style="font-size: 10px;">No.</th>
+                <th style="font-size: 10px;">NRP</th>
+                <th style="font-size: 10px;">Nama</th>
+                <th style="font-size: 10px;">Pangkat</th>
+                <th style="font-size: 10px;">Jabatan</th>
+                <th style="font-size: 10px;">Satker</th>
+                <th style="font-size: 10px;">Tanggal</th>
+                <th style="font-size: 10px;">KET</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% data.forEach(function(item,index) { %>
+                <tr>
+                    <td style="font-size: 10px;"><%= index + 1 %></td>
+                    <td style="font-size: 10px;"><%= item.anggota.nirp %></td>
+                    <td style="font-size: 10px;"><%= item.anggota.nama %></td>
+                    <td style="font-size: 10px;"><%= item.anggota.pangkat %></td>
+                    <td style="font-size: 10px;"><%= item.anggota.jabatan %></td>
+                    <td style="font-size: 10px;"><%= item.anggota.satker %></td>
+                    <td style="font-size: 10px;"><%= item.dateTime %></td>
+                    <td style="font-size: 10px;"><%= item.keterangan %></td>
+                </tr>
+            <% }); %>
+            <!-- Add more rows as needed -->
+        </tbody>
+    </table>
+
+    <h3 style="margin-top: 50px;">KET :</h3>
+    <div style="display: flex;">
+        <div style="display: flex;">
+            <p style="margin: 0;width: 40px;">H</p>
+            <p style="margin-top: 0;margin-left: 10px;">=</p>
+        </div>
+        <p style="margin-top: 0;margin-left: 30px;">1</p>
+    </div>
+    <div style="display: flex;">
+        <div style="display: flex;">
+            <p style="margin: 0;width: 40px;">DIK</p>
+            <p style="margin-top: 0;margin-left: 10px;">=</p>
+        </div>
+        <p style="margin-top: 0;margin-left: 30px;">13543543543</p>
+    </div>
+    <div style="display: flex;">
+        <div style="display: flex;">
+            <p style="margin: 0;width: 40px;">I</p>
+            <p style="margin-top: 0;margin-left: 10px;">=</p>
+        </div>
+        <p style="margin-top: 0;margin-left: 30px;">13543543543</p>
+    </div>
+    <div style="display: flex;">
+        <div style="display: flex;">
+            <p style="margin: 0;width: 40px;">C</p>
+            <p style="margin-top: 0;margin-left: 10px;">=</p>
+        </div>
+        <p style="margin-top: 0;margin-left: 30px;">13543543543</p>
+    </div>
+    <div style="display: flex;">
+        <div style="display: flex;">
+            <p style="margin: 0;width: 40px;">S</p>
+            <p style="margin-top: 0;margin-left: 10px;">=</p>
+        </div>
+        <p style="margin-top: 0;margin-left: 30px;">13543543543</p>
+    </div>
+    <div style="display: flex;">
+        <div style="display: flex;">
+            <p style="margin: 0;width: 40px;">TH</p>
+            <p style="margin-top: 0;margin-left: 10px;">=</p>
+        </div>
+        <p style="margin-top: 0;margin-left: 30px;">13543543543</p>
+    </div>
+    <div style="display: flex;">
+        <div style="display: flex;">
+            <p style="margin: 0;width: 40px;">TG</p>
+            <p style="margin-top: 0;margin-left: 10px;">=</p>
+        </div>
+        <p style="margin-top: 0;margin-left: 30px;">13543543543</p>
+    </div>
+    <div style="display: flex;">
+        <div style="display: flex;">
+            <p style="margin: 0;width: 40px;">TK</p>
+            <p style="margin-top: 0;margin-left: 10px;">=</p>
+        </div>
+        <p style="margin-top: 0;margin-left: 30px;">13543543543</p>
+    </div>
+    
+</body>
+</html>

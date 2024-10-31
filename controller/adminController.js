@@ -914,8 +914,56 @@ const restoreAbsen = async (req,res,next) => {
 }
 
 
+const getDetailIstansi = async (req,res,next) => {
+    try {
+    const countInstansi = await db.$queryRaw`
+    SELECT 
+      (SELECT COUNT(*)::int FROM anggota) AS jumlah_anggota,
+      (SELECT COUNT(*)::int FROM absensi) AS jumlah_absen,
+      (SELECT COUNT(*)::int FROM admin_satker) AS jumlah_admin_satker
+    `
+
+    return res.status(200).json({
+        msg : "success",
+        data : countInstansi
+    })
+    } catch (error) {
+        next(error)
+    }
+}
+
+const updatePassword = async (req,res,next) => {
+    try {
+        const password = req.body.password
+
+        if (!password) {
+            throw new responseError(400,"password tidak boleh kosong")
+        }else if(typeof password !== "string") {
+            throw new responseError(400,"password harus berupa text")
+        }else if(password.includes(" ")) {
+            throw new responseError(400,"password tidak boleh ada spasi")
+        }
+
+        await db.admin_satker.update({
+            where : {
+                id : req.admin.id
+            },
+            data : {
+                password : password
+            }
+        })
+
+        return res.status(200).json({
+            msg : "success"
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     findAdmin,
+    updatePassword,
     // admin satker
     addAdminSatker,
     getAllAdminSatker,
@@ -941,5 +989,9 @@ export default {
     findAbsenById,
     convertPdfAbsen,
     backUpAbsen,
-    restoreAbsen
+    restoreAbsen,
+
+
+    
+    getDetailIstansi
 }

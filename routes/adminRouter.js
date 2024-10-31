@@ -7,6 +7,7 @@ export const adminRouter = express.Router()
 adminRouter.use(adminMiddleware)
 
 adminRouter.get("/findAdmin",adminController.findAdmin)
+adminRouter.patch("/updatePassword",adminController.updatePassword)
 
 // admin satker
 adminRouter.post("/admin-satker",adminController.addAdminSatker)
@@ -34,3 +35,6 @@ adminRouter.get("/absen/:id",adminController.findAbsenById)
 adminRouter.get("/absen/convert/pdf",adminController.convertPdfAbsen)
 adminRouter.post("/absen/backup/pdf",adminController.backUpAbsen)
 adminRouter.post("/absen/restore/pdf",adminController.restoreAbsen)
+
+// detail istansi
+adminRouter.get("/detail/instansi",adminController.getDetailIstansi)

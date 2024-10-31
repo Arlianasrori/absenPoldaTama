@@ -12,6 +12,7 @@ import { keteranganAbsenList } from "../utils/keteranganAbsenList.js";
 const findAdmin = async (req,res,next) => {
     try {
         const id = req.adminSatker.id
+        
 
         const findAdminSatker = await db.admin_satker.findFirst({
             where : {
@@ -20,7 +21,8 @@ const findAdmin = async (req,res,next) => {
             select : {
                 id : true,
                 nama : true,
-                nirp : true
+                nirp : true,
+                satker : true
             }
         })
 
@@ -658,8 +660,58 @@ const restoreAbsen = async (req,res,next) => {
     }
 }
 
+const getDetailIstansi = async (req,res,next) => {
+    try {
+        console.log(req.adminSatker);
+        
+        const countInstansi = await db.$queryRaw`
+        SELECT 
+        (SELECT COUNT(*)::int FROM anggota where satker = ${req.adminSatker.satker}) AS jumlah_anggota,
+        (SELECT COUNT(*)::int FROM absensi left join anggota on absensi.id_anggota = anggota.id where anggota.satker = ${req.adminSatker.satker}) AS jumlah_absen
+        `
+
+        return res.status(200).json({
+            msg : "success",
+            data : countInstansi
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+const updatePassword = async (req,res,next) => {
+    try {
+        const password = req.body.password
+
+        if (!password) {
+            throw new responseError(400,"password tidak boleh kosong")
+        }else if(typeof password !== "string") {
+            throw new responseError(400,"password harus berupa text")
+        }else if(password.includes(" ")) {
+            throw new responseError(400,"password tidak boleh ada spasi")
+        }
+
+        await db.admin_satker.update({
+            where : {
+                id : req.adminSatker.id
+            },
+            data : {
+                password : password
+            }
+        })
+
+        return res.status(200).json({
+            msg : "success",
+            data : countInstansi
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     findAdmin,
+    updatePassword,
 
     // anggota
     addAnggota,
@@ -677,5 +729,8 @@ export default {
     findAbsenById,
     convertPdfAbsen,
     backUpAbsen,
-    restoreAbsen
+    restoreAbsen,
+
+    // detail istansi
+    getDetailIstansi
 }

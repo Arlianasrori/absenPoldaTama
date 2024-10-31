@@ -8,6 +8,7 @@ export const adminSatkerRouter = express.Router()
 adminSatkerRouter.use(adminSatkerMiddleware)
 
 adminSatkerRouter.get("/findAdminSatker",adminSatkerController.findAdmin)
+adminSatkerRouter.patch("/updatePassword",adminSatkerController.updatePassword)
 
 // anggota
 adminSatkerRouter.post("/anggota",adminSatkerController.addAnggota)
@@ -27,3 +28,6 @@ adminSatkerRouter.get("/absen/:id",adminSatkerController.findAbsenById)
 adminSatkerRouter.get("/absen/convert/pdf",adminSatkerController.convertPdfAbsen)
 adminSatkerRouter.post("/absen/backup/pdf",adminSatkerController.backUpAbsen)
 adminSatkerRouter.post("/absen/restore/pdf",adminSatkerController.restoreAbsen)
+
+// detail istansi
+adminSatkerRouter.get("/detail/instansi",adminSatkerController.getDetailIstansi)

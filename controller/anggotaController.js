@@ -149,6 +149,35 @@ const findAnggota = async (req,res,next) => {
     }  
 }
 
+const updatePassword = async (req,res,next) => {
+    try {
+        const password = req.body.password
+
+        if (!password) {
+            throw new responseError(400,"password tidak boleh kosong")
+        }else if(typeof password !== "string") {
+            throw new responseError(400,"password harus berupa text")
+        }else if(password.includes(" ")) {
+            throw new responseError(400,"password tidak boleh ada spasi")
+        }
+
+        await db.anggota.update({
+            where : {
+                id : req.anggota.id
+            },
+            data : {
+                password : password
+            }
+        })
+
+        return res.status(200).json({
+            msg : "success"
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
 const searchAbsen = async (req,res,next) => {
     try {
         const id = req.anggota.id
@@ -241,6 +270,7 @@ const searchAbsen = async (req,res,next) => {
 }
 
 export default {
+    updatePassword,
     addAbsen,
     getAllAbsenToday,
     findAnggota,
