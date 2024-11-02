@@ -937,17 +937,21 @@ const restoreAbsen = async (req,res,next) => {
 
 const getDetailIstansi = async (req,res,next) => {
     try {
-    const countInstansi = await db.$queryRaw`
-    SELECT 
-      (SELECT COUNT(*)::int FROM anggota) AS jumlah_anggota,
-      (SELECT COUNT(*)::int FROM absensi) AS jumlah_absen,
-      (SELECT COUNT(*)::int FROM admin_satker) AS jumlah_admin_satker
-    `
+        const now = new Date()
+        const start = format(new Date(now.getFullYear(), now.getMonth(), now.getDate()), 'yyyy-MM-dd HH:mm:ss')
+        const end = format(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59), 'yyyy-MM-dd HH:mm:ss')
 
-    return res.status(200).json({
-        msg : "success",
-        data : countInstansi
-    })
+        const countInstansi = await db.$queryRaw`
+        SELECT 
+        (SELECT COUNT(*)::int FROM anggota) AS jumlah_anggota,
+        (SELECT COUNT(*)::int FROM absensi WHERE "dateTime" >= ${start} AND "dateTime" <= ${end}) AS jumlah_absen,
+        (SELECT COUNT(*)::int FROM admin_satker) AS jumlah_admin_satker
+        `
+
+        return res.status(200).json({
+            msg : "success",
+            data : countInstansi
+        })
     } catch (error) {
         next(error)
     }
