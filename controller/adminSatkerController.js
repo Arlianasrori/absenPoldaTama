@@ -10,6 +10,7 @@ import { generateId } from "../utils/generateId.js";
 import { keteranganAbsenList } from "../utils/keteranganAbsenList.js";
 import randomString from "randomstring";
 
+
 const findAdmin = async (req,res,next) => {
     try {
         const id = req.adminSatker.id
