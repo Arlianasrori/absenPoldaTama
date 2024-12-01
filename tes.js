@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import xl from "xlsx"
 import { db } from "./config/prismaClient.js";
 
@@ -12,70 +12,69 @@ const sheet = workbook.Sheets;
 // Konversi sheet ke array of objects
 const data = xl.utils.sheet_to_json(sheet["Sheet1"]);
 
-console.log(data.length);
+// nama
+// nirp
+// pangkat
+// jabatan
+// satker
+// password
 
-let adaAnggota = 0
-
-// const nrpanggota = []
-// const dataAnggota = []
+// let dataNirp = []
+// let dataMappingDb = []
 // for (let i = 0; i < data.length; i++) {
-//     const row = data[i];
-//     console.log(nrpanggota);
+//   if(dataNirp.includes(data[i].NRP)){
     
-import pdfTableExtractor from 'pdf-table-extractor';
-=======
-// import pdfTableExtractor from 'pdf-table-extractor';
->>>>>>> fb91884832f165174cf9c1cb333b0714b68b0614
-
-// async function konversiPDFkeCSV(jalurPDF) {
-//   try {
-//     const result = await new Promise((resolve, reject) => {
-//       pdfTableExtractor(jalurPDF, resolve, reject);
-//     });
-
-//     // console.log(result.pageTables[0].tables);
-//     const dataRow = []
-
-//     for(let i = 3; i < result.pageTables[0].tables.length; i++) {
-//       // console.log(result.pageTables[0].tables[i]);
-//       const dataMapping = {
-//         NRP: result.pageTables[0].tables[i][1],
-//         Nama: result.pageTables[0].tables[i][2],
-//         Pangkat: result.pageTables[0].tables[i][3],
-//         Jabatan: result.pageTables[0].tables[i][4],
-//         Tanggal: result.pageTables[0].tables[i][5],
-//         Satker: result.pageTables[0].tables[i][6],
-//         Keterangan: result.pageTables[0].tables[i][7],
-//       }
-//       dataRow.push(dataMapping)
+//   }else{
+//     dataNirp.push(data[i].NRP)
+//     const dataMapping = {
+//       nama: data[i].Nama.replace("\n", ""),
+//       nirp: data[i].NRP.replace("\n", ""),
+//       pangkat: data[i].Pangkat.replace("\n", ""),
+//       jabatan: data[i].Jabatan.replace("\n", ""),
+//       satker: data[i].Satker.replace("\n", ""),
+//       password: data[i].Nama.replace("\n", ""),
 //     }
 
-//     console.log(dataRow);
-//   } catch (error) {
-//     console.error('Terjadi kesalahan:', error);
+//     dataMappingDb.push(dataMapping)
 //   }
+  
 // }
 
-// const jalurPDF = '/home/lyntri/project/absen-polda/public/laporan/laporanAbsen(2024-09-11 - 2024-09-25).pdf';
+// console.log(dataMappingDb);
 
-<<<<<<< HEAD
-konversiPDFkeCSV(jalurPDF);
-=======
-// konversiPDFkeCSV(jalurPDF);
+// absen
+console.log(data);
 
+const DbMapping = []
+for (let i = 0; i < data.length; i++) {
+  const anggota = await db.anggota.findFirst({
+    where: {
+      nirp: data[i].NRP.replace("\n", ""),
+    }
+  })
 
+  if(anggota){
+    const keteranganAbsen = {
+      HADIR : "H",
+      PENDIDIKAN : "DIK",
+      IZIN : "I",
+      CUTI : "C",
+      SAKIT : "S",
+      TAH : "TAH",
+      TUGAS : "TGS",
+    }
+    const mapping = {
+      id_anggota : anggota.id,
+      dateTime : data[i].Tanggal,
+      keterangan : keteranganAbsen[data[i].Keterangan] ? keteranganAbsen[data[i].Keterangan] : "H" 
+    }
+    DbMapping.push(mapping)
+  }
+  
+}
 
+// id_anggota
+// dateTime
+// keterangan
 
-import { db } from "./config/prismaClient.js";
-
-// anggota
-// absensi
-// admin_satker
-
-console.log(await db.$queryRaw`
-  SELECT 
-    (SELECT COUNT(*)::int FROM anggota) AS jumlah_anggota,
-    (SELECT COUNT(*)::int FROM absensi) AS jumlah_absen,
-    (SELECT COUNT(*)::int FROM admin_satker) AS jumlah_admin_satker
-`);
->>>>>>> fb91884832f165174cf9c1cb333b0714b68b0614
+console.log(DbMapping);

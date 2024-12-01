@@ -8,7 +8,7 @@ export const adminMiddleware = async (req,res,next) => {
     if(!token){
         return res.status(401).json({msg : "unauthorized"})
     }
-    
+
     const user = await jwt.verify(token,process.env.ACCESS_KEY_ADMIN,(err,user) => {
         if(err){
             return {

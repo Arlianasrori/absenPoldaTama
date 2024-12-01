@@ -29,6 +29,7 @@ app.use(
 backup_absen()
 
 app.use(fileUpload())
+app.use(express.static("public"))
 app.use(authRouter)
 app.use("/anggota",anggotaRouter)
 app.use("/admin",adminRouter)

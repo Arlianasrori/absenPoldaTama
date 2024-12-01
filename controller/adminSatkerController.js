@@ -8,6 +8,7 @@ import { generatePDFAbsen } from "../utils/convertToPdfAbsen.js";
 import { readPdf } from "../utils/readPdf.js";
 import { generateId } from "../utils/generateId.js";
 import { keteranganAbsenList } from "../utils/keteranganAbsenList.js";
+import randomString from "randomstring";
 
 const findAdmin = async (req,res,next) => {
     try {
@@ -68,8 +69,41 @@ const addAnggota = async (req,res,next) => {
     } catch (error) {
         next(error)
     }
+ 
 }
 
+const findAnggotaByNirp = async (req,res,next) => {
+    try {
+        const nirp = req.params.nirp
+        const satker = req.adminSatker.satker
+        
+        const findAnggotaByNirp = await db.anggota.findUnique({
+            where : {
+                nirp : nirp,
+                satker : satker
+            },
+            select : {
+                id : true,
+                nama : true,
+                nirp : true,
+                pangkat : true,
+                jabatan : true,
+                satker : true
+            }
+        })
+
+        if (!findAnggotaByNirp) {
+            throw new responseError(404,"anggota tidak ditemukan")
+        }
+
+        return res.status(200).json({
+            msg : "success",
+            data : findAnggotaByNirp
+        })
+    } catch (error) {
+        next(error)
+    }
+}
 
 const getAllAnggota = async (req,res,next) => {
     try {
@@ -299,40 +333,66 @@ const addAbsen = async (req,res,next) => {
             }
         })
 
+        const file = req.files && req.files.file
+
         if (!findAnggotaById) {
             throw new responseError(404,"anggota tidak ditemukan")
         }
 
-        await db.$transaction(async (tx) => {
-            const mapping = {
-                id : data.id,
-                id_anggota : data.id_anggota,
-                dateTime : data.dateTime,
-                keterangan : data.keterangan
-            }
-            
             const addAbsen = await tx.absensi.create({
-                data : mapping
+                data : {
+                    id_anggota: data.id_anggota,
+                    dateTime: data.dateTime,
+                    keterangan: data.keterangan
+                }
             })
 
             if (data.alasan) {
                 const allowAlasan = ["I","C"]
-                if (!allowAlasan.includes(data.keterangan)) {
-                    throw new responseError(400,"alasan absen hanya bisa untuk izin dan cuti")
+                if (!allowAlasan.includes(data.keterangan)) return res.status(200).json({
+                    msg : "alasan absen hanya bisa untuk izin dan cuti"
+                })
+
+                if(file) {
+                    const fileName = `${randomString.generate({length : 6, charset : "numeric"})}-${file.name.split(" ").slice(-1)[0]}`
+                    file.mv(`./public/dokumen_absen/${fileName}`,async (err) => {
+                        if (err) return res.status(200).json({
+                            msg : err.message
+                        })
+    
+                        const addAlasanAbsen = await db.alasanAbsensi.create({
+                            data : {
+                                id : generateId(),
+                                alasan : data.alasan,
+                                id_absen : addAbsen.id,
+                                file : `http://localhost:3000/dokumen_absen/${fileName}`
+                            }
+                        })
+                        return res.status(200).json({
+                            msg : "success",
+                            data : {
+                                ...addAbsen,
+                                alasan : addAlasanAbsen
+                            }
+                        })
+    
+                    })
+                }else {
+                    const addAlasanAbsen = await db.alasanAbsensi.create({
+                        data : {
+                            id : generateId(),
+                            alasan : data.alasan,
+                            id_absen : addAbsen.id
+                        }
+                    })
+                    return res.status(200).json({
+                        msg : "success",
+                        data : {
+                            ...addAbsen,
+                            alasan : addAlasanAbsen
+                        }
+                    })
                 }
-                
-                data.alasan.id = generateId()
-                data.alasan.id_absen = addAbsen.id
-                const addAlasanAbsen = await tx.alasanAbsensi.create({
-                    data : data.alasan
-                })
-                return res.status(200).json({
-                    msg : "success",
-                    data : {
-                        ...addAbsen,
-                        alasan : addAlasanAbsen
-                    }
-                })
             }else {
                 return res.status(200).json({
                     msg : "success",
@@ -342,7 +402,32 @@ const addAbsen = async (req,res,next) => {
                     }
                 })
             }
+    } catch (error) {
+        next(error)
+    }
+}
+
+const saveAbsen = async(req,res,next) => {
+    try {
+        const satker = req.adminSatker.satker
+        const dataFromDb = await db.absensi.findMany({
+            where : {
+                anggota : {
+                    satker : satker
+                }
+            }
         })
+
+        const addtoBackup = await db.backup_absen.createMany({
+            data : dataFromDb
+        })
+
+        return res.status(200).json({
+            msg : "success",
+            data : addtoBackup
+        })
+
+        
     } catch (error) {
         next(error)
     }
@@ -367,27 +452,64 @@ const updateAbsen = async (req,res,next) => {
             throw new responseError(404,"absen tidak ditemukan")
         }
 
-        const updateAbsen = await db.absensi.update({
-            where : {
-                id : id
-            },
-            data : data
-        })
+        const {alasan,...updateData} = data   
 
-        let updateAlasan = null
-        if (data.alasan) {
-            updateAlasan = await db.alasanAbsensi.update({
+        if(Object.keys(updateData).length !== 0) {
+            await db.absensi.update({
+                where : {
+                    id : id
+                },
+                data : updateData
+            })
+        }
+
+        const file = req.files && req.files.file
+
+        if (data.alasan || file) {
+            const findAlasanAnsen = await db.alasanAbsensi.findUnique({
                 where : {
                     id_absen : id
-                },
-                data : data.alasan
+                }
             })
+
+            if (!findAlasanAnsen) {
+                throw new responseError(404,"alasan absen tidak ditemukan")
+            }
+
+            if (data.alasan) {
+                await db.alasanAbsensi.update({
+                    where : {
+                        id_absen : id
+                    },
+                    data : {
+                        alasan : data.alasan
+                    }
+                })
+            }
+            if (file) {
+                const fileName = `${randomString.generate({ length: 6, charset: "numeric" })}-${file.name.split(" ").slice(-1)[0]}`;
+                file.mv(`./public/dokumen_absen/${fileName}`, async (err) => {
+                    if (err) {
+                        return res.status(500).json({
+                            msg: err.message
+                        });
+                    }
+
+                    await db.alasanAbsensi.update({
+                        where : {
+                            id_absen : id
+                        },
+                        data : {
+                            file: `http://localhost:3000/dokumen_absen/${fileName}`
+                        }
+                    });
+                });
+            } 
         }
         return res.status(200).json({
             msg : "success",
             data : {
-                ...updateAbsen,
-                alasan : updateAlasan
+                ...updateAbsen
             }
         })   
     } catch (error) {
@@ -716,12 +838,14 @@ export default {
     // anggota
     addAnggota,
     getAllAnggota,
+    findAnggotaByNirp,
     findAnggotaById,
     updateAnggota,
     deleteAnggota,
     searchAnggota,
     // absen
     addAbsen,
+    saveAbsen,
     updateAbsen,
     deleteAbsen,
     searchAbsen,

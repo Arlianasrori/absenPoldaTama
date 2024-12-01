@@ -22,11 +22,13 @@ adminRouter.post("/anggota",adminController.addAnggota)
 adminRouter.get("/anggota/get/search",adminController.searchAnggota)
 adminRouter.get("/anggota",adminController.getAllAnggota)
 adminRouter.get("/anggota/:id",adminController.findAnggotaById)
+adminRouter.get("/anggota/nirp/:nirp",adminController.findAnggotaByNirp)
 adminRouter.put("/anggota/:id",adminController.updateAnggota)
 adminRouter.delete("/anggota/:id",adminController.deleteAnggota)
 
 // absen
 adminRouter.post("/absen",adminController.addAbsen)
+adminRouter.post("/absen/save",adminController.saveAbsen)
 adminRouter.put("/absen/:id",adminController.updateAbsen)
 adminRouter.delete("/absen/:id",adminController.deleteAbsen)
 adminRouter.get("/absen/get/search",adminController.searchAbsen)

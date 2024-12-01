@@ -60,7 +60,8 @@ export const searchAbsen = async (query,satker) => {
     const findAbsen = await db.backup_absen.findMany({
         where : whereQuery,
         orderBy : {
-            dateTime : "desc"
+            dateTime : "desc",
+            // id_anggota : "desc"
         },
         select : {
             id : true,
